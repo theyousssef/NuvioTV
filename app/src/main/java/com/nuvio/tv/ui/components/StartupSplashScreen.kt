@@ -101,7 +101,7 @@ fun StartupSplashScreen(
             verticalArrangement = Arrangement.Center
         ) {
             BrandWordmark(
-                modifier = Modifier.height(48.dp),
+                modifier = Modifier.height(144.dp),
                 contentDescription = stringResource(R.string.cd_nuvio_logo),
                 drawableOverride = brandWordmarkRes
             )
