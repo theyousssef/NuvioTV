@@ -6,6 +6,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.SeekParameters
 import com.nuvio.tv.R
 import com.nuvio.tv.core.player.LastPlaybackDiagnostics
+import com.nuvio.tv.core.player.ResumeInfoFormatter
 import com.nuvio.tv.core.tracking.TRACKING_SCROBBLE_DIAGNOSTIC_TAG
 import com.nuvio.tv.core.tracking.TrackingMediaKind
 import com.nuvio.tv.core.tracking.TrackingMediaReference
@@ -725,7 +726,12 @@ internal fun PlayerRuntimeController.saveWatchProgressInternal(position: Long, d
         position = position,
         duration = duration,
         lastWatched = System.currentTimeMillis(),
-        progressPercent = fallbackPercent
+        progressPercent = fallbackPercent,
+        sourceLabel = ResumeInfoFormatter.sourceLabel(
+            addonName = currentAddonName,
+            streamName = _uiState.value.currentStreamName,
+            streamDescription = currentStreamDescription
+        )
     )
 
     scope.launch(kotlinx.coroutines.NonCancellable) {

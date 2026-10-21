@@ -41,6 +41,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.nuvio.tv.R
+import com.nuvio.tv.core.player.ResumeInfoFormatter
 import com.nuvio.tv.domain.model.CardDepthSurface
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -503,18 +504,21 @@ fun ContinueWatchingCard(
     }
     val remainingText = progress?.let {
         remember(it.position, it.duration, it.progressPercent) {
-            formatContinueWatchingProgressLabel(
-                progress = it,
-                resumeLabel = strResume,
-                percentWatchedLabel = strPercentWatched,
-                hoursMinLeftLabel = strHoursMinLeft,
-                minLeftLabel = strMinLeft
-            )
+            // Exact resume point when both values are known, otherwise the rougher time left label.
+            ResumeInfoFormatter.resumeTime(it.position, it.duration)
+                ?: formatContinueWatchingProgressLabel(
+                    progress = it,
+                    resumeLabel = strResume,
+                    percentWatchedLabel = strPercentWatched,
+                    hoursMinLeftLabel = strHoursMinLeft,
+                    minLeftLabel = strMinLeft
+                )
         }
     }
     val badgeText = remember(remainingText, nextUpBadgeText, effectiveNextUpLabel) {
         remainingText ?: nextUpBadgeText ?: effectiveNextUpLabel
     }
+    val sourceLabel = progress?.sourceLabel?.takeIf { it.isNotBlank() }
     val progressFraction = remember(progress) { progress?.progressPercentage ?: 0f }
     val imageModel = remember(item, effectiveEpisodeThumbnails, usePosterArtwork) {
         continueWatchingImageModel(item, effectiveEpisodeThumbnails, usePosterArtwork)
@@ -677,6 +681,7 @@ fun ContinueWatchingCard(
                 episodeStr = episodeStr,
                 episodeTitle = episodeTitle,
                 badgeText = badgeText,
+                progressText = if (sourceLabel != null) "$badgeText · $sourceLabel" else badgeText,
                 badgeBackground = badgeBackground,
                 showBadge = progress == null,
                 progressFraction = progressFraction,
@@ -796,7 +801,8 @@ fun ContinueWatchingCard(
                             titleText = titleText,
                             titleStyle = titleStyle,
                             titleMarqueeActive = titleMarqueeActive,
-                            episodeTitle = episodeTitle
+                            episodeTitle = episodeTitle,
+                            sourceLabel = sourceLabel
                         )
                     }
                 }
@@ -920,6 +926,7 @@ private fun WideCardContent(
     episodeStr: String?,
     episodeTitle: String?,
     badgeText: String,
+    progressText: String,
     badgeBackground: Color,
     showBadge: Boolean,
     progressFraction: Float,
@@ -1051,7 +1058,7 @@ private fun WideCardContent(
                     )
                 }
                 Text(
-                    text = badgeText,
+                    text = progressText,
                     style = MaterialTheme.typography.labelSmall,
                     color = NuvioTheme.extendedColors.textSecondary,
                     maxLines = 1,
@@ -1069,7 +1076,8 @@ private fun ContinueWatchingCardText(
     titleText: String,
     titleStyle: TextStyle,
     titleMarqueeActive: Boolean,
-    episodeTitle: String?
+    episodeTitle: String?,
+    sourceLabel: String?
 ) {
     if (episodeStr != null) {
         Text(
@@ -1090,6 +1098,16 @@ private fun ContinueWatchingCardText(
         Text(
             text = title,
             style = MaterialTheme.typography.bodySmall,
+            color = NuvioTheme.extendedColors.textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+
+    sourceLabel?.let { label ->
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
             color = NuvioTheme.extendedColors.textSecondary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

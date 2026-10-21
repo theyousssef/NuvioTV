@@ -186,7 +186,9 @@ private fun PlaybackNavHost(
                         returnToDetailOnBack = item.progress.contentType.equals("series", ignoreCase = true),
                         returnToHomeOnBack = true,
                         startFromBeginning = startFromBeginning,
-                        contentLanguage = item.contentLanguage
+                        contentLanguage = item.contentLanguage,
+                        // A plain resume replays the source that was playing, skipping the picker.
+                        resumeLastSource = !manualSelection && !startFromBeginning
                     )
                     is ContinueWatchingItem.NextUp -> Screen.Stream.createRoute(
                         videoId = item.info.videoId,
@@ -517,6 +519,11 @@ private fun PlaybackNavHost(
                     type = NavType.StringType
                     nullable = true
                     defaultValue = null
+                },
+                navArgument("resumeLastSource") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = "false"
                 }
             )
         ) { backStackEntry ->
