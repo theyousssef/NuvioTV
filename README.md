@@ -1,6 +1,10 @@
 <div align="center">
 
-  <img src="assets/brand/app_logo_wordmark.png" alt="Nuvio" width="300" />
+  <img src="assets/brand/app_logo_wordmark.png" alt="Locflix" width="300" />
+
+  <h1>Locflix</h1>
+
+  <p><em>Locflix is a modified version of <a href="https://github.com/NuvioMedia/NuvioTV">Nuvio TV</a>.</em></p>
 
   <p>
     A free, open-source media app for your phone, your desktop, and the TV you already own.
