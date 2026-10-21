@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -75,6 +77,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import com.nuvio.tv.core.localmedia.LocalMediaStreams.isLocalShowMore
 import com.nuvio.tv.ui.util.contentTextDirection
 import com.nuvio.tv.ui.util.toAbsoluteAlignment
 import com.nuvio.tv.ui.util.localizeEpisodeTitle
@@ -147,6 +150,17 @@ fun StreamScreen(
     val scope = rememberCoroutineScope()
     val streamHazeState = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) HazeState() else null
+    }
+
+    val localMediaPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) viewModel.onEvent(StreamScreenEvent.OnLocalMediaPermissionResult)
+    }
+    LaunchedEffect(Unit) {
+        if (viewModel.shouldRequestLocalMediaPermission()) {
+            localMediaPermissionLauncher.launch(viewModel.localMediaPermission)
+        }
     }
 
     LaunchedEffect(restoreSourceSelection) {
@@ -452,21 +466,28 @@ fun StreamScreen(
                     onAddonFilterSelected = { viewModel.onEvent(StreamScreenEvent.OnAddonFilterSelected(it)) },
                     onRefresh = { viewModel.onEvent(StreamScreenEvent.OnRefresh) },
                     onStreamSelected = { stream ->
-                        val currentIndex = uiState.filteredStreams.indexOfFirst {
-                            it.url == stream.url &&
-                                it.infoHash == stream.infoHash &&
-                                it.ytId == stream.ytId &&
-                                it.addonName == stream.addonName
-                        }
-                        if (currentIndex >= 0) {
-                            focusedStreamIndex = currentIndex
-                        }
-                        scope.coroutineLaunch {
-                            val playbackInfo = viewModel.resolveStreamForPlayback(stream)
-                            if (playbackInfo != null) {
-                                pendingRestoreOnResume = true
-                                routePlayback(playbackInfo)
-                                viewModel.onEvent(StreamScreenEvent.OnAutoPlayConsumed)
+                        if (stream.isLocalShowMore()) {
+                            // Keep focus where the button was; the next local match takes its place.
+                            focusedStreamIndex = uiState.filteredStreams.indexOf(stream).coerceAtLeast(0)
+                            restoreFocusedStream = true
+                            viewModel.onEvent(StreamScreenEvent.OnShowMoreLocalMatches)
+                        } else {
+                            val currentIndex = uiState.filteredStreams.indexOfFirst {
+                                it.url == stream.url &&
+                                    it.infoHash == stream.infoHash &&
+                                    it.ytId == stream.ytId &&
+                                    it.addonName == stream.addonName
+                            }
+                            if (currentIndex >= 0) {
+                                focusedStreamIndex = currentIndex
+                            }
+                            scope.coroutineLaunch {
+                                val playbackInfo = viewModel.resolveStreamForPlayback(stream)
+                                if (playbackInfo != null) {
+                                    pendingRestoreOnResume = true
+                                    routePlayback(playbackInfo)
+                                    viewModel.onEvent(StreamScreenEvent.OnAutoPlayConsumed)
+                                }
                             }
                         }
                     },

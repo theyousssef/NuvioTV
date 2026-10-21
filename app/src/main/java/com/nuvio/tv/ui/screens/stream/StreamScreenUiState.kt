@@ -47,6 +47,8 @@ sealed class StreamScreenEvent {
     data object OnAutoPlayConsumed : StreamScreenEvent()
     data object OnRefresh : StreamScreenEvent()
     data object OnRetry : StreamScreenEvent()
+    data object OnShowMoreLocalMatches : StreamScreenEvent()
+    data object OnLocalMediaPermissionResult : StreamScreenEvent()
     data object OnBackPress : StreamScreenEvent()
     data object OnResume : StreamScreenEvent()
 }

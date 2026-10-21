@@ -1,6 +1,7 @@
 package com.nuvio.tv.core.player
 
 import com.nuvio.tv.core.build.AppFeaturePolicy
+import com.nuvio.tv.core.localmedia.LocalMediaStreams
 import com.nuvio.tv.data.local.StreamAutoPlayMode
 import com.nuvio.tv.data.local.StreamAutoPlaySource
 import com.nuvio.tv.domain.model.AddonStreams
@@ -13,6 +14,10 @@ object StreamAutoPlaySelector {
         installedOrder: List<String>
     ): List<AddonStreams> {
         if (streams.isEmpty()) return streams
+
+        // Files already on the device always lead: they start instantly and need no network.
+        val (localEntries, onlineEntries) = streams.partition { it.addonName == LocalMediaStreams.ADDON_NAME }
+        if (localEntries.isNotEmpty()) return localEntries + orderAddonStreams(onlineEntries, installedOrder)
 
         val addonRankByName = HashMap<String, Int>(installedOrder.size)
         installedOrder.forEachIndexed { index, addonName ->

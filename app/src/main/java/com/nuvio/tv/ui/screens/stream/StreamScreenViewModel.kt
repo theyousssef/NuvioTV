@@ -28,6 +28,9 @@ import com.nuvio.tv.core.streams.StreamBadgePresentation
 import com.nuvio.tv.data.local.PlayerPreference
 import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
+import com.nuvio.tv.core.localmedia.LocalMediaLibrary
+import com.nuvio.tv.core.localmedia.LocalMediaMatch
+import com.nuvio.tv.core.localmedia.LocalMediaStreams
 import com.nuvio.tv.data.local.StreamAutoPlayMode
 import com.nuvio.tv.data.local.StreamBadgeSettingsDataStore
 import com.nuvio.tv.data.local.StreamLinkCacheDataStore
@@ -54,12 +57,15 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -91,6 +97,7 @@ class StreamScreenViewModel @Inject constructor(
     private val subtitleRepository: com.nuvio.tv.domain.repository.SubtitleRepository,
     private val subtitleFileCache: com.nuvio.tv.core.player.SubtitleFileCache,
     private val torrentService: TorrentService,
+    private val localMediaLibrary: LocalMediaLibrary,
     profileManager: com.nuvio.tv.core.profile.ProfileManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -109,6 +116,8 @@ class StreamScreenViewModel @Inject constructor(
     private var streamBadgePresentationRequestId = 0L
     private var badgedAddonNames: Set<String> = emptySet()
     private var playbackMetaVideos: List<Video>? = null
+    private var localMatches: List<LocalMediaMatch> = emptyList()
+    private var localMatchesExpanded = false
 
     private val embeddedStreamGroupName: String by lazy {
         context.getString(R.string.stream_embedded_group)
@@ -306,6 +315,11 @@ class StreamScreenViewModel @Inject constructor(
                 loadStreams(forceRefresh = true)
             }
             StreamScreenEvent.OnRetry -> loadStreams()
+            StreamScreenEvent.OnShowMoreLocalMatches -> expandLocalMatches()
+            StreamScreenEvent.OnLocalMediaPermissionResult -> {
+                localMediaLibrary.invalidate()
+                loadStreams()
+            }
             StreamScreenEvent.OnBackPress -> { /* Handle in screen */ }
             StreamScreenEvent.OnResume -> {
                 hostInForeground.value = true
@@ -653,11 +667,14 @@ class StreamScreenViewModel @Inject constructor(
             }
 
             val streamLoadInner = launch {
-                streamRepository.getStreamsFromAllAddons(
-                    type = contentType,
-                    videoId = videoId,
-                    season = season,
-                    episode = episode,
+                withLocalMedia(
+                    streamRepository.getStreamsFromAllAddons(
+                        type = contentType,
+                        videoId = videoId,
+                        season = season,
+                        episode = episode,
+                        forceRefresh = forceRefresh
+                    ),
                     forceRefresh = forceRefresh
                 ).collect { result ->
                     when (result) {
@@ -894,6 +911,61 @@ class StreamScreenViewModel @Inject constructor(
             streamLoadCompleted = true
         }
     }
+
+    /**
+     * Adds the "Local files" group in front of the addon results. The device scan runs alongside the
+     * addon requests, and a local match is still shown when every online source fails.
+     */
+    private fun withLocalMedia(
+        remote: Flow<NetworkResult<List<AddonStreams>>>,
+        forceRefresh: Boolean
+    ): Flow<NetworkResult<List<AddonStreams>>> {
+        if (!localMediaLibrary.hasPermission()) return remote
+        if (forceRefresh) localMediaLibrary.invalidate()
+        val query = LocalMediaStreams.query(title, contentName, year, season, episode)
+        val local = flow<List<LocalMediaMatch>?> {
+            emit(null)
+            emit(localMediaLibrary.findMatches(query))
+        }
+        return combine(remote, local) { result, matches ->
+            if (matches != null) localMatches = matches
+            val group = localMediaGroup()
+            when {
+                group == null -> result
+                result is NetworkResult.Success -> NetworkResult.Success(listOf(group) + result.data)
+                else -> NetworkResult.Success(listOf(group))
+            }
+        }
+    }
+
+    private fun localMediaGroup(): AddonStreams? =
+        LocalMediaStreams.group(localMatches, localMatchesExpanded) { hidden ->
+            context.getString(R.string.local_media_show_more, hidden)
+        }
+
+    private fun expandLocalMatches() {
+        if (localMatchesExpanded) return
+        localMatchesExpanded = true
+        val group = localMediaGroup() ?: return
+        updateUiStateIfChanged { state ->
+            val groups = state.addonStreams.map { if (it.addonName == group.addonName) group else it }
+            val allStreams = groups.flatMap { it.streams }
+            val filter = state.selectedAddonFilter
+            val fullFiltered = if (filter == null) allStreams else allStreams.filter { it.addonName == filter }
+            streamFilterFullList = fullFiltered
+            val pageEnd = (state.filteredStreams.size + group.streams.size).coerceAtMost(fullFiltered.size)
+            state.copy(
+                addonStreams = groups,
+                allStreams = allStreams,
+                filteredStreams = fullFiltered.subList(0, pageEnd)
+            )
+        }
+    }
+
+    val localMediaPermission: String get() = localMediaLibrary.requiredPermission
+
+    /** True only the first time, so declining is respected instead of asking on every title. */
+    fun shouldRequestLocalMediaPermission(): Boolean = localMediaLibrary.consumePermissionPrompt()
 
     private fun shouldAttemptEmbeddedMetaStreamLookup(): Boolean {
         val metaId = contentId?.takeIf { it.isNotBlank() } ?: return false
