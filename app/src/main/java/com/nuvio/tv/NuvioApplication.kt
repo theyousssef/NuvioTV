@@ -25,6 +25,7 @@ import com.nuvio.tv.core.sync.StartupSyncService
 import com.nuvio.tv.core.sync.androidtv.AndroidTvChannelSyncService
 import com.nuvio.tv.core.network.IPv4FirstDns
 import com.nuvio.tv.data.local.ImagePerformancePreferences
+import com.nuvio.tv.data.repository.TraktContinueWatchingSyncService
 import com.nuvio.tv.data.local.SentrySettingsDataStore
 import com.nuvio.tv.data.simkl.SimklAnimeIdPreferenceHolder
 import dagger.hilt.android.HiltAndroidApp
@@ -41,6 +42,7 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
 
     @Inject lateinit var startupSyncService: StartupSyncService
     @Inject lateinit var androidTvChannelSyncService: AndroidTvChannelSyncService
+    @Inject lateinit var traktContinueWatchingSyncService: TraktContinueWatchingSyncService
     @Inject lateinit var sentrySettingsDataStore: SentrySettingsDataStore
     @Inject lateinit var imagePerformancePreferences: ImagePerformancePreferences
     @Inject lateinit var simklAnimeIdPreferenceHolder: SimklAnimeIdPreferenceHolder
@@ -80,6 +82,7 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
         SentryInitializer.start(this, sentrySettingsDataStore)
         PluginRuntimeHooks.onApplicationCreate(this)
         androidTvChannelSyncService.start()
+        traktContinueWatchingSyncService.start()
         // Load locale synchronously so it's available before Activity.attachBaseContext.
         // SharedPreferences reads are fast (cached in memory after first access).
         val tag = getSharedPreferences("app_locale", Context.MODE_PRIVATE)

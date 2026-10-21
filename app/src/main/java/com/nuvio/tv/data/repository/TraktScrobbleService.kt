@@ -40,6 +40,24 @@ sealed interface TraktScrobbleItem {
     }
 }
 
+/** Outcome of writing a local playback position to Trakt with `scrobble/pause`. */
+enum class TraktPlaybackPushResult {
+    /** Trakt stored the playback progress. */
+    STORED,
+    /** Trakt refused this item for good (e.g. 422 below 1%, 404 unknown title); do not retry. */
+    REJECTED,
+    /** Network, auth, rate-limit or server trouble; try again on a later pass. */
+    RETRY_LATER
+}
+
+internal fun classifyTraktPlaybackPush(code: Int?): TraktPlaybackPushResult = when {
+    code == null -> TraktPlaybackPushResult.RETRY_LATER
+    code in 200..299 || code == 409 -> TraktPlaybackPushResult.STORED
+    code == 401 || code == 403 || code == 408 || code == 420 || code == 429 -> TraktPlaybackPushResult.RETRY_LATER
+    code in 400..499 -> TraktPlaybackPushResult.REJECTED
+    else -> TraktPlaybackPushResult.RETRY_LATER
+}
+
 @Singleton
 class TraktScrobbleService @Inject constructor(
     private val traktApi: TraktApi,
@@ -76,6 +94,27 @@ class TraktScrobbleService @Inject constructor(
 
     suspend fun scrobblePause(item: TraktScrobbleItem, progressPercent: Float) {
         sendScrobble(action = "pause", item = item, progressPercent = progressPercent)
+    }
+
+    /**
+     * Saves [progressPercent] as Trakt playback progress (`scrobble/pause` creates or updates the
+     * paused entry; it never adds history). Used to bring Trakt up to date with local progress.
+     */
+    suspend fun pushPausedProgress(item: TraktScrobbleItem, progressPercent: Float): TraktPlaybackPushResult {
+        if (!traktAuthService.getCurrentAuthState().isAuthenticated) return TraktPlaybackPushResult.RETRY_LATER
+        if (!traktAuthService.hasRequiredCredentials()) return TraktPlaybackPushResult.RETRY_LATER
+        val requestBody = buildRequestBody(item, progressPercent.coerceIn(0f, 100f))
+        val response = try {
+            traktAuthService.executeAuthorizedWriteRequest { authHeader ->
+                traktApi.scrobblePause(authHeader, requestBody)
+            }
+        } catch (e: IOException) {
+            Log.w(TAG, "Playback push failed (IO) for ${item.itemKey}", e)
+            null
+        }
+        val result = classifyTraktPlaybackPush(response?.code())
+        Log.d(TAG, "Playback push ${item.itemKey} ${"%.1f".format(progressPercent)}% -> ${response?.code()} $result")
+        return result
     }
 
     private suspend fun sendScrobble(

@@ -532,6 +532,15 @@ class TraktProgressService @Inject constructor(
             .distinctUntilChanged()
     }
 
+    /**
+     * Trakt's own progress snapshot without optimistic local entries; null until the first
+     * snapshot has loaded.
+     */
+    fun observeRemoteSnapshot(): Flow<List<WatchProgress>?> =
+        combine(remoteProgress, hasLoadedRemoteProgress) { remote, loaded ->
+            if (loaded) remote else null
+        }.distinctUntilChanged()
+
     fun observeRemoteProgressLoaded(): Flow<Boolean> {
         return hasLoadedRemoteProgress
     }

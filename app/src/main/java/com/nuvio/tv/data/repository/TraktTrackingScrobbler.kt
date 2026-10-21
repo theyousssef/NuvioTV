@@ -31,6 +31,9 @@ class TraktTrackingScrobbler @Inject constructor(
         }
     }
 
+    suspend fun buildScrobbleItem(media: TrackingMediaReference): TraktScrobbleItem? =
+        media.toTraktScrobbleItem()
+
     private suspend fun TrackingMediaReference.toTraktScrobbleItem(): TraktScrobbleItem? {
         val traktIds = TraktIdsDto(
             trakt = ids.trakt.toIntExactOrNull(),
