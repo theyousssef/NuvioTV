@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.tvprovider.media.tv.Channel
 import androidx.tvprovider.media.tv.PreviewProgram
 import androidx.tvprovider.media.tv.TvContractCompat
+import com.nuvio.tv.BuildConfig
 import com.nuvio.tv.MainActivity
 import com.nuvio.tv.R
 import com.nuvio.tv.domain.model.WatchProgress
@@ -64,7 +65,12 @@ class AndroidTvChannelManager @Inject constructor(
                     arrayOf(TvContractCompat.Channels._ID),
                     null, null, null
                 )
-                cursor?.use { if (it.moveToFirst()) return@runCatching stored }
+                val exists = cursor?.use { it.moveToFirst() } == true
+                if (exists) {
+                    // The launcher keeps the logo written at creation, so refresh it after an app update.
+                    if (prefs.getLogoVersion() != BuildConfig.VERSION_CODE) writeChannelLogo(stored)
+                    return@runCatching stored
+                }
                 Log.d(TAG, "Stored channel $stored gone; recreating")
                 prefs.clearChannelId()
             }
@@ -352,13 +358,14 @@ class AndroidTvChannelManager @Inject constructor(
         }
     }
 
-    private fun writeChannelLogo(channelId: Long) {
+    private suspend fun writeChannelLogo(channelId: Long) {
         runCatching {
             val bitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
                 ?: return
             context.contentResolver.openOutputStream(
                 TvContractCompat.buildChannelLogoUri(channelId)
             )?.use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+            prefs.setLogoVersion(BuildConfig.VERSION_CODE)
         }.onFailure { Log.w(TAG, "writeChannelLogo failed", it) }
     }
 

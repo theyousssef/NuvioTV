@@ -2,6 +2,7 @@ package com.nuvio.tv.core.sync.androidtv
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,6 +21,7 @@ class TvChannelPreferences @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val channelIdKey = longPreferencesKey("continue_watching_channel_id")
+    private val logoVersionKey = intPreferencesKey("channel_logo_version")
 
     suspend fun getChannelId(): Long? =
         context.tvChannelDataStore.data.map { it[channelIdKey] }.first()
@@ -30,5 +32,13 @@ class TvChannelPreferences @Inject constructor(
 
     suspend fun clearChannelId() {
         context.tvChannelDataStore.edit { it.remove(channelIdKey) }
+    }
+
+    /** The app versionCode whose launcher icon was last written as the channel logo. */
+    suspend fun getLogoVersion(): Int? =
+        context.tvChannelDataStore.data.map { it[logoVersionKey] }.first()
+
+    suspend fun setLogoVersion(version: Int) {
+        context.tvChannelDataStore.edit { it[logoVersionKey] = version }
     }
 }
