@@ -271,7 +271,17 @@ class TraktAuthService @Inject constructor(
 
         return tokenRefreshMutex.withLock {
             val state = getCurrentAuthState()
-            val refreshToken = state.refreshToken ?: return@withLock false
+            val refreshToken = state.refreshToken
+            if (refreshToken.isNullOrBlank()) {
+                // An expired access token with no refresh token can never be renewed:
+                // the user has to connect Trakt again.
+                if (!state.accessToken.isNullOrBlank() && isTokenExpiredOrExpiring(state)) {
+                    Log.w("TraktAuthService", "Access token expired and no refresh token is stored")
+                    authSessionNoticeDataStore.markTraktReconnectRequired()
+                    traktAuthDataStore.clearAuth()
+                }
+                return@withLock false
+            }
             if (!force && !isTokenExpiredOrExpiring(state)) {
                 trace("refreshTokenIfNeeded: token still valid, skip refresh")
                 return@withLock true

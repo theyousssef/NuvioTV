@@ -2306,6 +2306,10 @@
     <string name="upstream_release_name_date">%1$s · %2$s</string>
     <string name="upstream_release_ok">OK</string>
     <string name="cd_upstream_release_qr">QR code for the Nuvio release notes</string>
+    <string name="trakt_reauth_title">Trakt login expired</string>
+    <string name="trakt_reauth_body">Your Trakt session has ended, so watch progress and Continue Watching are no longer syncing with Trakt. Log in again to resume syncing.</string>
+    <string name="trakt_reauth_log_in">Log in to Trakt</string>
+    <string name="trakt_reauth_later">Later</string>
     <string name="update_open_settings">Open Settings</string>
     <string name="update_install">Install</string>
     <string name="update_ignore">Ignore</string>

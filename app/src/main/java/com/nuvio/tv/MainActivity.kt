@@ -192,6 +192,8 @@ import com.nuvio.tv.ui.util.LocalFastHorizontalNavigationEnabled
 import com.nuvio.tv.ui.util.LocalRecompositionHighlighterEnabled
 import com.nuvio.tv.ui.util.rememberDrawerItemFocusRequesters
 import com.nuvio.tv.updater.UpdateViewModel
+import com.nuvio.tv.core.trakt.TraktReauthViewModel
+import com.nuvio.tv.core.trakt.ui.TraktReauthDialog
 import com.nuvio.tv.updater.UpstreamReleaseViewModel
 import com.nuvio.tv.updater.ui.UpstreamReleaseDialog
 import com.nuvio.tv.updater.ui.UpdateBannerHost
@@ -1117,6 +1119,20 @@ open class MainActivity : ComponentActivity() {
                                 onDismiss = upstreamReleaseViewModel::acknowledge
                             )
                         }
+
+                    // Shown on Home after each fresh start while an expired/revoked Trakt
+                    // login needs reconnecting; waits for the release notice to be closed.
+                    val traktReauthViewModel: TraktReauthViewModel = hiltViewModel(this@MainActivity)
+                    val showTraktReauth by traktReauthViewModel.showPrompt.collectAsState()
+                    if (showTraktReauth && upstreamReleaseNotice == null && currentRoute == Screen.Home.route) {
+                        TraktReauthDialog(
+                            onLogIn = {
+                                traktReauthViewModel.dismissForSession()
+                                navController.navigate(Screen.Tracking.route)
+                            },
+                            onLater = traktReauthViewModel::dismissForSession
+                        )
+                    }
 
                     UpdateBannerHost(
                         state = updateBannerState,

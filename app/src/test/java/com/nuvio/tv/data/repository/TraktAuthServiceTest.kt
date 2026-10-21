@@ -42,6 +42,31 @@ class TraktAuthServiceTest {
         coVerify(exactly = 1) { traktAuthDataStore.clearAuth() }
     }
 
+    @Test
+    fun `expired token without refresh token requires reconnecting`() = runTest {
+        val traktApi = mockk<TraktApi>()
+        val traktAuthDataStore = mockk<TraktAuthDataStore>()
+        val authSessionNoticeDataStore = mockk<AuthSessionNoticeDataStore>()
+        var authState = authenticatedState().copy(refreshToken = null)
+
+        coEvery { traktAuthDataStore.getCurrentState() } answers { authState }
+        coEvery { traktAuthDataStore.clearAuth() } answers { authState = TraktAuthState() }
+        coEvery { authSessionNoticeDataStore.markTraktReconnectRequired() } returns Unit
+
+        val service = TraktAuthService(
+            context = mockk<Context>(relaxed = true),
+            traktApi = traktApi,
+            traktAuthDataStore = traktAuthDataStore,
+            authSessionNoticeDataStore = authSessionNoticeDataStore
+        )
+
+        assertFalse(service.refreshTokenIfNeeded(force = false))
+
+        coVerify(exactly = 0) { traktApi.refreshToken(any()) }
+        coVerify(exactly = 1) { authSessionNoticeDataStore.markTraktReconnectRequired() }
+        coVerify(exactly = 1) { traktAuthDataStore.clearAuth() }
+    }
+
     private fun authenticatedState(): TraktAuthState {
         return TraktAuthState(
             accessToken = "access-token",

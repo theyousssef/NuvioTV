@@ -33,6 +33,14 @@ class AuthSessionNoticeDataStore @Inject constructor(
     private val hadTraktAuthKey = booleanPreferencesKey("had_trakt_auth")
     private val traktExplicitLogoutKey = booleanPreferencesKey("trakt_explicit_logout")
     private val pendingTraktNoticeKey = booleanPreferencesKey("pending_trakt_notice")
+    /** Trakt was connected but the session ended without the user logging out (expired or
+     *  revoked token, failed refresh). Unlike [pendingTraktNoticeKey] it is not consumed by
+     *  the one-time toast: it stays set until Trakt is connected again or the user logs out. */
+    private val traktReauthRequiredKey = booleanPreferencesKey("trakt_reauth_required")
+
+    val traktReauthRequired: Flow<Boolean> = context.authSessionNoticeDataStore.data.map { preferences ->
+        preferences[traktReauthRequiredKey] == true
+    }
 
     val pendingNotice: Flow<StartupAuthNotice?> = context.authSessionNoticeDataStore.data.map { preferences ->
         when {
@@ -78,6 +86,7 @@ class AuthSessionNoticeDataStore @Inject constructor(
             preferences[hadTraktAuthKey] = true
             preferences[traktExplicitLogoutKey] = false
             preferences[pendingTraktNoticeKey] = false
+            preferences[traktReauthRequiredKey] = false
         }
     }
 
@@ -86,6 +95,7 @@ class AuthSessionNoticeDataStore @Inject constructor(
             preferences[hadTraktAuthKey] = false
             preferences[traktExplicitLogoutKey] = true
             preferences[pendingTraktNoticeKey] = false
+            preferences[traktReauthRequiredKey] = false
         }
     }
 
@@ -96,6 +106,7 @@ class AuthSessionNoticeDataStore @Inject constructor(
             val explicitLogout = preferences[traktExplicitLogoutKey] == true
             if (hadAuth && !explicitLogout) {
                 preferences[pendingTraktNoticeKey] = true
+                preferences[traktReauthRequiredKey] = true
                 marked = true
             }
             preferences[hadTraktAuthKey] = false
@@ -107,6 +118,7 @@ class AuthSessionNoticeDataStore @Inject constructor(
     suspend fun markTraktReconnectRequired() {
         context.authSessionNoticeDataStore.edit { preferences ->
             preferences[pendingTraktNoticeKey] = true
+            preferences[traktReauthRequiredKey] = true
             preferences[hadTraktAuthKey] = false
             preferences[traktExplicitLogoutKey] = false
         }
