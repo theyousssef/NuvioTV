@@ -39,6 +39,9 @@ object LocalMediaStreams {
         return AddonStreams(addonName = ADDON_NAME, addonLogo = null, streams = visible)
     }
 
+    /** Every match, without a "show more" card, for lists that cannot expand one. */
+    fun group(matches: List<LocalMediaMatch>): AddonStreams? = group(matches, expanded = true) { "" }
+
     fun Stream.isLocalFile(): Boolean = addonName == ADDON_NAME && url != null
 
     /** The placeholder card that expands the group. It has no URL, so autoplay never picks it. */

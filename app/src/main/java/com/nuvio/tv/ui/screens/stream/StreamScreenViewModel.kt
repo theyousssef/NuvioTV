@@ -32,6 +32,7 @@ import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
 import com.nuvio.tv.core.localmedia.LocalMediaLibrary
 import com.nuvio.tv.core.localmedia.LocalMediaMatch
+import com.nuvio.tv.core.localmedia.LocalMediaStreamSource
 import com.nuvio.tv.core.localmedia.LocalMediaStreams
 import com.nuvio.tv.data.local.StreamAutoPlayMode
 import com.nuvio.tv.data.local.StreamBadgeSettingsDataStore
@@ -65,10 +66,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -101,6 +100,7 @@ class StreamScreenViewModel @Inject constructor(
     private val subtitleFileCache: com.nuvio.tv.core.player.SubtitleFileCache,
     private val torrentService: TorrentService,
     private val localMediaLibrary: LocalMediaLibrary,
+    private val localMediaStreamSource: LocalMediaStreamSource,
     profileManager: com.nuvio.tv.core.profile.ProfileManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -936,34 +936,19 @@ class StreamScreenViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Adds the "Local files" group in front of the addon results. The device scan runs alongside the
-     * addon requests, and a local match is still shown when every online source fails.
-     */
+    /** Adds the "Local files" group, collapsed to the best match until the user asks for more. */
     private fun withLocalMedia(
         remote: Flow<NetworkResult<List<AddonStreams>>>,
         forceRefresh: Boolean
-    ): Flow<NetworkResult<List<AddonStreams>>> {
-        if (!localMediaLibrary.hasPermission()) return remote
-        if (forceRefresh) localMediaLibrary.invalidate()
-        val query = LocalMediaStreams.query(title, contentName, year, season, episode)
-        val local = flow<List<LocalMediaMatch>?> {
-            emit(null)
-            emit(localMediaLibrary.findMatches(query))
-        }
-        return combine(remote, local) { result, matches ->
+    ): Flow<NetworkResult<List<AddonStreams>>> =
+        localMediaStreamSource.withLocalMedia(
+            remote = remote,
+            query = LocalMediaStreams.query(title, contentName, year, season, episode),
+            forceRefresh = forceRefresh
+        ) { matches ->
             if (matches != null) localMatches = matches
-            val group = localMediaGroup()
-            when {
-                // Say that local files were searched too, not only that addons are missing.
-                group == null && matches != null && result is NetworkResult.Error ->
-                    result.copy(message = context.getString(R.string.local_media_no_match, result.message))
-                group == null -> result
-                result is NetworkResult.Success -> NetworkResult.Success(listOf(group) + result.data)
-                else -> NetworkResult.Success(listOf(group))
-            }
+            localMediaGroup()
         }
-    }
 
     private fun localMediaGroup(): AddonStreams? =
         LocalMediaStreams.group(localMatches, localMatchesExpanded) { hidden ->

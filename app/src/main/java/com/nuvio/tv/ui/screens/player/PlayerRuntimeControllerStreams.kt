@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.nuvio.tv.core.debrid.DirectDebridPlayableResult
+import com.nuvio.tv.core.localmedia.LocalMediaStreams
 import com.nuvio.tv.core.network.NetworkResult
 import com.nuvio.tv.core.player.StreamAutoPlaySelector
 import com.nuvio.tv.data.local.PlayerSettings
@@ -22,6 +23,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
@@ -151,6 +153,32 @@ internal fun PlayerRuntimeController.showSourcesPanel() {
     loadSourceStreams(forceRefresh = false)
 }
 
+/**
+ * Addon streams for [season]/[episode] of the title being played, with matching files on the
+ * device listed first. The show title stays the same when switching to another episode.
+ */
+private fun PlayerRuntimeController.streamsWithLocalMedia(
+    type: String,
+    videoId: String,
+    season: Int?,
+    episode: Int?,
+    forceRefresh: Boolean = false
+): Flow<NetworkResult<List<AddonStreams>>> {
+    val remote = streamRepository.getStreamsFromAllAddons(
+        type = type,
+        videoId = videoId,
+        season = season,
+        episode = episode,
+        forceRefresh = forceRefresh
+    )
+    if (type.equals("cloud", ignoreCase = true)) return remote
+    return localMediaStreamSource.withLocalMedia(
+        remote = remote,
+        query = LocalMediaStreams.query(title, contentName, year, season, episode),
+        forceRefresh = forceRefresh
+    )
+}
+
 internal fun PlayerRuntimeController.buildSourceRequestKey(type: String, videoId: String, season: Int?, episode: Int?): String {
     return "$type|$videoId|${season ?: -1}|${episode ?: -1}"
 }
@@ -220,7 +248,7 @@ internal fun PlayerRuntimeController.loadSourceStreams(forceRefresh: Boolean) {
             updateSourceChipsForFetchStart(type, vid, installedAddons)
         }
 
-        streamRepository.getStreamsFromAllAddons(
+        streamsWithLocalMedia(
             type = type,
             videoId = vid,
             season = seasonArg,
@@ -1140,7 +1168,7 @@ internal fun PlayerRuntimeController.loadStreamsForEpisode(video: Video, forceRe
         // Initialize episode source chips with LOADING status
         updateEpisodeSourceChipsForFetchStart(type, video.id, installedAddons)
 
-        streamRepository.getStreamsFromAllAddons(
+        streamsWithLocalMedia(
             type = type,
             videoId = video.id,
             season = video.season,
@@ -1778,7 +1806,7 @@ internal fun PlayerRuntimeController.playNextEpisode(userInitiated: Boolean = fa
             val timeoutSeconds = playerSettings.streamAutoPlayTimeoutSeconds
 
             val innerJob = launch {
-                streamRepository.getStreamsFromAllAddons(
+                streamsWithLocalMedia(
                     type = type,
                     videoId = nextVideo.id,
                     season = nextVideo.season,
