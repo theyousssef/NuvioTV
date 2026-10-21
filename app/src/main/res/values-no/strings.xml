@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Nuvio</string>
+    <string name="app_name">Locflix</string>
     <string name="type_movie">Film</string>
     <string name="type_series">Serie</string>
     <string name="type_unknown">Ukjent</string>
@@ -643,7 +643,7 @@
     <string name="trakt_stat_watched_hours">Sette timer</string>
     <string name="trakt_disconnect">Koble fra</string>
     <string name="trakt_disconnect_title">Koble fra Trakt?</string>
-    <string name="trakt_disconnect_subtitle">Dette vil koble fra Trakt-kontoen din fra Nuvio.</string>
+    <string name="trakt_disconnect_subtitle">Dette vil koble fra Trakt-kontoen din fra Locflix.</string>
     <string name="trakt_login">Logge inn</string>
     <string name="trakt_retry">Prøv igjen</string>
     <string name="trakt_back">Tilbake</string>
@@ -1066,7 +1066,7 @@
     <string name="catalog_see_all_empty_subtitle">Prøv en annen katalog eller kom tilbake senere</string>
 
     <!-- LayoutSelectionScreen -->
-    <string name="layout_selection_welcome">Velkommen til Nuvio</string>
+    <string name="layout_selection_welcome">Velkommen til Locflix</string>
     <string name="layout_selection_subtitle">Velg oppsettet for hjemmeskjermen</string>
     <string name="layout_selection_continue">Fortsett</string>
 

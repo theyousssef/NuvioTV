@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Nuvio</string>
+    <string name="app_name">Locflix</string>
     <string name="type_movie">Film</string>
     <string name="type_series">Serija</string>
     <string name="type_unknown">Nepoznato</string>
@@ -385,8 +385,8 @@
     <string name="playback_resolution_matching_sub">Dozvoli promjene načina prikaza kako bi odgovaralo rezoluciji videa.</string>
     <string name="playback_player_external_desc">Uvijek otvaraj streamove u vanjskoj aplikaciji</string>
     <string name="playback_player_ask_desc">Odaberi player svaki put</string>
-    <string name="playback_engine_exoplayer_desc">Najbolja kompatibilnost sa trenutnim Nuvio funkcijama.</string>
-    <string name="playback_engine_mvplayer_desc">Koristi libmpv sa Nuvio OSD kontrolama. Eksperimentalno.</string>
+    <string name="playback_engine_exoplayer_desc">Najbolja kompatibilnost sa trenutnim Locflix funkcijama.</string>
+    <string name="playback_engine_mvplayer_desc">Koristi libmpv sa Locflix OSD kontrolama. Eksperimentalno.</string>
 
     <!-- PlaybackAudioSettings -->
     <string name="audio_trailer_section">Trailer</string>
@@ -880,7 +880,7 @@
     <string name="stream_type_torrent">Torrent</string>
     <string name="stream_type_youtube">YouTube</string>
     <string name="p2p_consent_title">P2P Streaming</string>
-    <string name="p2p_consent_body">Ovaj stream koristi peer-to-peer (P2P) tehnologiju. Omogućavanjem P2P-a, slažete se sa sljedećim:\n\n• Vaša IP adresa će biti vidljiva drugim učesnicima u mreži\n• Vi ste isključivo odgovorni za sadržaj kojem pristupate\n• Potvrđujete da imate zakonsko pravo streamati ovaj sadržaj u vašoj državi\n• Nuvio ne hosta, ne distribuira i ne kontroliše bilo kakav P2P sadržaj\n• Nuvio ne snosi odgovornost za bilo kakve pravne posljedice koje proizilaze iz vašeg korištenja P2P streaminga\n\nOvu funkciju koristite u potpunosti na vlastiti rizik. P2P možete isključiti bilo kada u Postavkama.</string>
+    <string name="p2p_consent_body">Ovaj stream koristi peer-to-peer (P2P) tehnologiju. Omogućavanjem P2P-a, slažete se sa sljedećim:\n\n• Vaša IP adresa će biti vidljiva drugim učesnicima u mreži\n• Vi ste isključivo odgovorni za sadržaj kojem pristupate\n• Potvrđujete da imate zakonsko pravo streamati ovaj sadržaj u vašoj državi\n• Locflix ne hosta, ne distribuira i ne kontroliše bilo kakav P2P sadržaj\n• Locflix ne snosi odgovornost za bilo kakve pravne posljedice koje proizilaze iz vašeg korištenja P2P streaminga\n\nOvu funkciju koristite u potpunosti na vlastiti rizik. P2P možete isključiti bilo kada u Postavkama.</string>
     <string name="p2p_consent_enable">Omogući P2P</string>
     <string name="p2p_consent_cancel">Otkaži</string>
     <string name="settings_p2p_title">P2P Streaming</string>
@@ -1236,7 +1236,7 @@
     <string name="catalog_see_all_empty_subtitle">Pokušaj sa drugim katalogom ili provjeri kasnije</string>
 
     <!-- LayoutSelectionScreen -->
-    <string name="layout_selection_welcome">Dobrodošli u Nuvio</string>
+    <string name="layout_selection_welcome">Dobrodošli u Locflix</string>
     <string name="layout_selection_subtitle">Odaberi raspored početnog ekrana</string>
     <string name="layout_selection_continue">Nastavi</string>
 
@@ -1422,7 +1422,7 @@
     <string name="cd_preview">Pregled</string>
     <string name="cd_test">Testiraj</string>
     <string name="cd_unlink">Odspoji</string>
-    <string name="cd_nuvio_logo">NuvioTV</string>
+    <string name="cd_nuvio_logo">Locflix</string>
     <string name="cd_trakt_logo">Trakt Logo</string>
     <string name="cd_trakt_qr">Trakt QR za aktivaciju</string>
     <string name="cd_imdb">IMDb</string>
@@ -1433,7 +1433,7 @@
     <string name="cd_expand">Proširi %1$s</string>
     <string name="cd_collapse">Skupi %1$s</string>
     <string name="cd_qr_login">QR kod za prijavu</string>
-    <string name="cd_nuvio">Nuvio</string>
+    <string name="cd_nuvio">Locflix</string>
 
     <!-- Debug -->
     <string name="debug_signin_success">Uspješno prijavljeno</string>

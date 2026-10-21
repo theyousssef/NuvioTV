@@ -101,7 +101,7 @@ android {
     ndkVersion = "29.0.14206865"
 
     defaultConfig {
-        applicationId = "com.nuvio.tv"
+        applicationId = "com.locflix.tv"
         minSdk = 24
         targetSdk = 36
         versionCode = 1062
@@ -162,7 +162,7 @@ android {
         }
         create("playstore") {
             dimension = "distribution"
-            applicationId = "com.nuvio.app"
+            applicationId = "com.locflix.tv"
             buildConfigField("boolean", "FEATURE_PLUGINS_ENABLED", "false")
             buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "false")
             buildConfigField("boolean", "FEATURE_IN_APP_TRAILERS_ENABLED", "false")
@@ -333,8 +333,7 @@ android {
 
 androidComponents {
     onVariants(selector().withBuildType("debug")) { variant ->
-        val isPlaystore = variant.productFlavors.any { it.second == "playstore" }
-        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else "com.nuviodebug.com")
+        variant.applicationId.set("com.locflix.tv.debug")
     }
 }
 

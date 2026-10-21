@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Nuvio</string>
+    <string name="app_name">Locflix</string>
     <string name="type_movie">Filmas</string>
     <string name="type_series">Serialas</string>
     <string name="type_unknown">Nežinoma</string>
@@ -575,7 +575,7 @@
     <string name="trakt_stat_watched_hours">Žiūrėta valandų</string>
     <string name="trakt_disconnect">Atsijungti</string>
     <string name="trakt_disconnect_title">Atsijungti nuo „Trakt“?</string>
-    <string name="trakt_disconnect_subtitle">Tai atsies jūsų „Trakt“ paskyrą nuo „Nuvio“.</string>
+    <string name="trakt_disconnect_subtitle">Tai atsies jūsų „Trakt“ paskyrą nuo „Locflix“.</string>
     <string name="trakt_login">Prisijungti</string>
     <string name="trakt_retry">Bandyti dar kartą</string>
     <string name="trakt_back">Atgal</string>
@@ -851,10 +851,10 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
 
     <!-- AccountSettingsContent -->
     <string name="account_loading">Įkeliama…</string>
-    <string name="account_sync_description">Jūsų paskyra sinchronizuojama per „Nuvio Sync“.</string>
+    <string name="account_sync_description">Jūsų paskyra sinchronizuojama per „Locflix Sync“.</string>
     <string name="account_sync_restart_note">Pakeitimų įsigaliojimui gali reikėti paleisti programą iš naujo.</string>
     <string name="account_signin_qr_title">Prisijungti</string>
-    <string name="account_signin_qr_subtitle">„Nuvio“ naudoja „Supabase“ sinchronizavimui</string>
+    <string name="account_signin_qr_subtitle">„Locflix“ naudoja „Supabase“ sinchronizavimui</string>
     <string name="account_signed_in_label">Prisijungta kaip</string>
     <string name="account_total_label">Iš viso</string>
     <string name="account_loading_sync">Sinchronizuojama…</string>
@@ -948,7 +948,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="catalog_see_all_empty_subtitle">Šiame kataloge turinio nerasta</string>
 
     <!-- LayoutSelectionScreen -->
-    <string name="layout_selection_welcome">Sveiki atvykę į Nuvio</string>
+    <string name="layout_selection_welcome">Sveiki atvykę į Locflix</string>
     <string name="layout_selection_subtitle">Pasirinkite, kaip norite matyti pradinį ekraną</string>
     <string name="layout_selection_continue">Tęsti</string>
 

@@ -596,8 +596,8 @@
     <string name="playback_player_ask_desc">ஒவ்வொரு முறையும் பிளேயரை தேர்வு செய்</string>
     <string name="playback_player_auto">தானாக (உள்ளடக்கத்திற்கு சிறந்தது)</string>
     <string name="playback_player_auto_desc">திரைப்படங்கள் &amp; தொடர்களுக்கு ExoPlayer · Anime-க்கு MPV</string>
-    <string name="playback_engine_exoplayer_desc">தற்போதைய Nuvio அம்சங்களுடன் சிறந்த பொருத்தம்.</string>
-    <string name="playback_engine_mvplayer_desc">Nuvio OSD கட்டுப்பாடுகளுடன் libmpv பயன்படுத்துகிறது. சோதனை நிலையில் உள்ளது.</string>
+    <string name="playback_engine_exoplayer_desc">தற்போதைய Locflix அம்சங்களுடன் சிறந்த பொருத்தம்.</string>
+    <string name="playback_engine_mvplayer_desc">Locflix OSD கட்டுப்பாடுகளுடன் libmpv பயன்படுத்துகிறது. சோதனை நிலையில் உள்ளது.</string>
 
         <!-- PlaybackAudioSettings -->
     <string name="audio_trailer_section">ட்ரெய்லர்</string>

@@ -586,7 +586,7 @@
     <string name="trakt_stat_watched_hours">Tittade timmar</string>
     <string name="trakt_disconnect">Koppla från</string>
     <string name="trakt_disconnect_title">Koppla från Trakt?</string>
-    <string name="trakt_disconnect_subtitle">Detta kopplar från ditt Trakt-konto från Nuvio.</string>
+    <string name="trakt_disconnect_subtitle">Detta kopplar från ditt Trakt-konto från Locflix.</string>
     <string name="trakt_login">Logga in</string>
     <string name="trakt_retry">Försök igen</string>
     <string name="trakt_back">Tillbaka</string>
@@ -1000,7 +1000,7 @@
     <string name="catalog_see_all_empty_subtitle">Prova en annan katalog eller kom tillbaka senare</string>
 
     <!-- LayoutSelectionScreen -->
-    <string name="layout_selection_welcome">Välkommen till Nuvio</string>
+    <string name="layout_selection_welcome">Välkommen till Locflix</string>
     <string name="layout_selection_subtitle">Välj din hemskärmslayout</string>
     <string name="layout_selection_continue">Fortsätt</string>
 
@@ -1225,7 +1225,7 @@
     <string name="playback_player_auto_desc">ExoPlayer för filmer och serier · MPV för anime</string>
 
     <!-- App name -->
-    <string name="app_name">Nuvio</string>
+    <string name="app_name">Locflix</string>
 
     <!-- WebConfigServers -->
     <string name="web_manage_addons_title">Hantera tillägg</string>
@@ -1317,7 +1317,7 @@
     <string name="playback_afr_capability_disable_button">Inaktivera AFR</string>
     <string name="playback_afr_capability_disable_resolution_button">Inaktivera upplösningsmatchning</string>
     <string name="playback_afr_capability_disable_both_button">Inaktivera båda</string>
-    <string name="playback_engine_exoplayer_desc">Bästa kompatibilitet med nuvarande Nuvio-funktioner.</string>
+    <string name="playback_engine_exoplayer_desc">Bästa kompatibilitet med nuvarande Locflix-funktioner.</string>
     <string name="playback_engine_mvplayer_desc">Använder libmpv med Nuvios OSD-kontroller. Experimentellt.</string>
 
     <!-- PlaybackAudioSettings -->
@@ -1373,7 +1373,7 @@
 
     <!-- StreamScreen / P2P -->
     <string name="p2p_consent_title">P2P-streaming</string>
-    <string name="p2p_consent_body">Denna ström använder peer-to-peer (P2P)-teknik. Genom att aktivera P2P bekräftar och godkänner du att:\n\n• Din IP-adress kommer att vara synlig för andra peers i nätverket\n• Du är ensam ansvarig för det innehåll du ser\n• Du bekräftar att du har laglig rätt att se detta innehåll i din jurisdiktion\n• Nuvio är inte värd för, distribuerar eller kontrollerar något P2P-innehåll\n• Nuvio bär inget ansvar för rättsliga konsekvenser som uppstår vid din användning av P2P-streaming\n\nDu använder denna funktion helt på egen risk. P2P kan inaktiveras när som helst i Inställningar.</string>
+    <string name="p2p_consent_body">Denna ström använder peer-to-peer (P2P)-teknik. Genom att aktivera P2P bekräftar och godkänner du att:\n\n• Din IP-adress kommer att vara synlig för andra peers i nätverket\n• Du är ensam ansvarig för det innehåll du ser\n• Du bekräftar att du har laglig rätt att se detta innehåll i din jurisdiktion\n• Locflix är inte värd för, distribuerar eller kontrollerar något P2P-innehåll\n• Locflix bär inget ansvar för rättsliga konsekvenser som uppstår vid din användning av P2P-streaming\n\nDu använder denna funktion helt på egen risk. P2P kan inaktiveras när som helst i Inställningar.</string>
     <string name="p2p_consent_enable">Aktivera P2P</string>
     <string name="p2p_consent_cancel">Avbryt</string>
     <string name="settings_p2p_title">P2P-streaming</string>
@@ -1534,7 +1534,7 @@
     <string name="cd_preview">Förhandsvisning</string>
     <string name="cd_test">Testa</string>
     <string name="cd_unlink">Avlänka</string>
-    <string name="cd_nuvio_logo">NuvioTV</string>
+    <string name="cd_nuvio_logo">Locflix</string>
     <string name="cd_trakt_logo">Trakt-logotyp</string>
     <string name="cd_trakt_qr">Trakt-aktiverings-QR</string>
     <string name="cd_imdb">IMDb</string>
@@ -1545,7 +1545,7 @@
     <string name="cd_expand">Expandera %1$s</string>
     <string name="cd_collapse">Fäll ihop %1$s</string>
     <string name="cd_qr_login">QR-inloggningskod</string>
-    <string name="cd_nuvio">Nuvio</string>
+    <string name="cd_nuvio">Locflix</string>
 
     <!-- Debug -->
     <string name="debug_signin_success">Inloggad</string>

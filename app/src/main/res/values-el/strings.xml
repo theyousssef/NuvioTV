@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">Nuvio</string>
+  <string name="app_name">Locflix</string>
   <string name="tv_channel_continue_watching">Συνέχεια παρακολούθησης</string>
   <string name="type_movie">Ταινία</string>
   <string name="type_movies">Ταινίες</string>
@@ -396,24 +396,24 @@
   <string name="about_licenses_attributions">Άδειες &amp; αναγνώριση</string>
   <string name="about_licenses_attributions_subtitle">Πηγές δεδομένων, ευχαριστίες και άδειες Android</string>
   <string name="licenses_attributions_title">Άδειες &amp; αναγνώριση</string>
-  <string name="licenses_attributions_subtitle">Πάροχοι δεδομένων, αναγνώριση υπηρεσιών και άδειες αναπαραγωγής Android που χρησιμοποιεί το Nuvio TV.</string>
+  <string name="licenses_attributions_subtitle">Πάροχοι δεδομένων, αναγνώριση υπηρεσιών και άδειες αναπαραγωγής Android που χρησιμοποιεί το Locflix.</string>
   <string name="licenses_attributions_section_app">ΑΔΕΙΑ ΕΦΑΡΜΟΓΗΣ</string>
   <string name="licenses_attributions_section_data">ΔΕΔΟΜΕΝΑ &amp; ΥΠΗΡΕΣΙΕΣ</string>
   <string name="licenses_attributions_section_playback">ΑΔΕΙΕΣ ΑΝΑΠΑΡΑΓΩΓΗΣ ANDROID</string>
   <string name="licenses_attributions_nuvio_title">Nuvio TV</string>
   <string name="licenses_attributions_nuvio_body">Ο πηγαίος κώδικας και οι όροι άδειας είναι διαθέσιμοι στο αποθετήριο του έργου. Διατίθεται υπό την άδεια GNU General Public License v3.0.</string>
   <string name="licenses_attributions_tmdb_title">The Movie Database (TMDB)</string>
-  <string name="licenses_attributions_tmdb_body">Το Nuvio χρησιμοποιεί το API του TMDB για μεταδεδομένα ταινιών και σειρών, εικόνες, τρέιλερ, ηθοποιούς, λεπτομέρειες παραγωγής, συλλογές και προτάσεις. Αυτό το προϊόν χρησιμοποιεί το API του TMDB αλλά δεν υποστηρίζεται ούτε πιστοποιείται από το TMDB.</string>
+  <string name="licenses_attributions_tmdb_body">Το Locflix χρησιμοποιεί το API του TMDB για μεταδεδομένα ταινιών και σειρών, εικόνες, τρέιλερ, ηθοποιούς, λεπτομέρειες παραγωγής, συλλογές και προτάσεις. Αυτό το προϊόν χρησιμοποιεί το API του TMDB αλλά δεν υποστηρίζεται ούτε πιστοποιείται από το TMDB.</string>
   <string name="licenses_attributions_trakt_title">Trakt</string>
-  <string name="licenses_attributions_trakt_body">Το Nuvio συνδέεται με το Trakt για ταυτοποίηση λογαριασμού, ιστορικό παρακολούθησης, συγχρονισμό προόδου, δεδομένα βιβλιοθήκης, βαθμολογίες, λίστες και σχόλια. Το Nuvio δεν συνδέεται ούτε υποστηρίζεται από το Trakt.</string>
+  <string name="licenses_attributions_trakt_body">Το Locflix συνδέεται με το Trakt για ταυτοποίηση λογαριασμού, ιστορικό παρακολούθησης, συγχρονισμό προόδου, δεδομένα βιβλιοθήκης, βαθμολογίες, λίστες και σχόλια. Το Locflix δεν συνδέεται ούτε υποστηρίζεται από το Trakt.</string>
   <string name="licenses_attributions_simkl_title">Simkl</string>
-  <string name="licenses_attributions_simkl_body">Το Nuvio συνδέεται με το Simkl για ταυτοποίηση λογαριασμού, λίστες παρακολούθησης, ιστορικό προβολής, πρόοδο αναπαραγωγής και scrobbling. Τα δεδομένα παρακολούθησης ταινιών, σειρών και anime παρέχονται από το Simkl. Το Nuvio δεν συνδέεται ούτε υποστηρίζεται επίσημα από το Simkl.</string>
+  <string name="licenses_attributions_simkl_body">Το Locflix συνδέεται με το Simkl για ταυτοποίηση λογαριασμού, λίστες παρακολούθησης, ιστορικό προβολής, πρόοδο αναπαραγωγής και scrobbling. Τα δεδομένα παρακολούθησης ταινιών, σειρών και anime παρέχονται από το Simkl. Το Locflix δεν συνδέεται ούτε υποστηρίζεται επίσημα από το Simkl.</string>
   <string name="licenses_attributions_mdblist_title">MDBList</string>
-  <string name="licenses_attributions_mdblist_body">Το Nuvio χρησιμοποιεί το MDBList για βαθμολογίες και δεδομένα εξωτερικών παρόχων βαθμολογίας. Το Nuvio δεν συνδέεται ούτε υποστηρίζεται από το MDBList.</string>
+  <string name="licenses_attributions_mdblist_body">Το Locflix χρησιμοποιεί το MDBList για βαθμολογίες και δεδομένα εξωτερικών παρόχων βαθμολογίας. Το Locflix δεν συνδέεται ούτε υποστηρίζεται από το MDBList.</string>
   <string name="licenses_attributions_introdb_title">IntroDB</string>
-  <string name="licenses_attributions_introdb_body">Το Nuvio χρησιμοποιεί το API του IntroDB για χρονικές σημάνσεις εισαγωγής, περίληψης, τίτλων και προεπισκόπησης από την κοινότητα, που χρησιμοποιούνται από τα στοιχεία παράλειψης. Το Nuvio δεν συνδέεται ούτε υποστηρίζεται από το IntroDB.</string>
+  <string name="licenses_attributions_introdb_body">Το Locflix χρησιμοποιεί το API του IntroDB για χρονικές σημάνσεις εισαγωγής, περίληψης, τίτλων και προεπισκόπησης από την κοινότητα, που χρησιμοποιούνται από τα στοιχεία παράλειψης. Το Locflix δεν συνδέεται ούτε υποστηρίζεται από το IntroDB.</string>
   <string name="licenses_attributions_imdb_title">IMDb – Σύνολα δεδομένων μη εμπορικής χρήσης</string>
-  <string name="licenses_attributions_imdb_body">Το Nuvio χρησιμοποιεί τα μη εμπορικά σύνολα δεδομένων IMDb, συμπεριλαμβανομένου του title.ratings.tsv.gz, για βαθμολογίες και αριθμό ψήφων IMDb. Πληροφορίες με την ευγένεια του IMDb (https://www.imdb.com). Χρησιμοποιούνται με άδεια. Τα δεδομένα IMDb προορίζονται για προσωπική και μη εμπορική χρήση σύμφωνα με τους όρους του IMDb.</string>
+  <string name="licenses_attributions_imdb_body">Το Locflix χρησιμοποιεί τα μη εμπορικά σύνολα δεδομένων IMDb, συμπεριλαμβανομένου του title.ratings.tsv.gz, για βαθμολογίες και αριθμό ψήφων IMDb. Πληροφορίες με την ευγένεια του IMDb (https://www.imdb.com). Χρησιμοποιούνται με άδεια. Τα δεδομένα IMDb προορίζονται για προσωπική και μη εμπορική χρήση σύμφωνα με τους όρους του IMDb.</string>
   <string name="licenses_attributions_exoplayer_title">AndroidX Media3 ExoPlayer 1.8.0</string>
   <string name="licenses_attributions_exoplayer_body">Χρησιμοποιείται ως μηχανή αναπαραγωγής Android. Διατίθεται υπό την άδεια Apache, έκδοση 2.0.</string>
   <string name="licenses_attributions_libmpv_title">libmpv / libmpv-android</string>
@@ -440,7 +440,7 @@
   <string name="settings_advanced_subtitle">Εκτέλεση διαγνωστικών ταχύτητας δικτύου</string>
   <string name="experience_mode_essential">Βασική</string>
   <string name="experience_mode_advanced">Προχωρημένη</string>
-  <string name="experience_mode_choose_title">Επιλέξτε την εμπειρία Nuvio σας</string>
+  <string name="experience_mode_choose_title">Επιλέξτε την εμπειρία Locflix σας</string>
   <string name="experience_mode_choose_subtitle">Ξεκινήστε απλά ή ξεκλειδώστε κάθε προσαρμογή. Μπορείτε να αλλάξετε ανά πάσα στιγμή.</string>
   <string name="experience_mode_essential_card_subtitle">Εστιασμένη ρύθμιση, πρόσθετα, βασικά αναπαραγωγής, Trakt και ρυθμίσεις λογαριασμού.</string>
   <string name="experience_mode_advanced_card_subtitle">Πλήρεις ρυθμίσεις, έλεγχοι διάταξης, σειρά καταλόγων, συλλογές, plug-ins και διαγνωστικά.</string>
@@ -520,8 +520,8 @@
   <string name="advanced_section_cache">Προσωρινή μνήμη</string>
   <string name="advanced_fast_horizontal_navigation">Γρήγορη οριζόντια πλοήγηση</string>
   <string name="advanced_fast_horizontal_navigation_subtitle">Αύξηση ταχύτητας επανάληψης D-pad στις σειρές, διατηρώντας ενεργό το throttling επανάληψης.</string>
-  <string name="advanced_nuvio_focus_scroll">Κύλιση εστίασης Nuvio</string>
-  <string name="advanced_nuvio_focus_scroll_subtitle">Χρήση του προσαρμοσμένου καθολικού animation και positioning κύλισης εστίασης του Nuvio.</string>
+  <string name="advanced_nuvio_focus_scroll">Κύλιση εστίασης Locflix</string>
+  <string name="advanced_nuvio_focus_scroll_subtitle">Χρήση του προσαρμοσμένου καθολικού animation και positioning κύλισης εστίασης του Locflix.</string>
   <string name="advanced_rgb565">Αποκωδικοποίηση εικόνων RGB565</string>
   <string name="advanced_rgb565_subtitle">Χρήση 16-bit χρώματος με χαμηλότερη κατανάλωση μνήμης για κατάλληλες αδιαφανείς εικόνες. Η αλλαγή επανεκκινεί την εφαρμογή.</string>
   <string name="advanced_memory_only_vertical_scroll">Κάθετη κύλιση μόνο από μνήμη</string>
@@ -679,8 +679,8 @@
   <string name="playback_player_ask_desc">Επιλογή προγράμματος αναπαραγωγής κάθε φορά</string>
   <string name="playback_player_auto">Αυτόματο (Καλύτερο για το περιεχόμενο)</string>
   <string name="playback_player_auto_desc">ExoPlayer για Ταινίες &amp; Σειρές · MPV για Anime</string>
-  <string name="playback_engine_exoplayer_desc">Καλύτερη συμβατότητα με τις τρέχουσες δυνατότητες του Nuvio.</string>
-  <string name="playback_engine_mvplayer_desc">Χρησιμοποιεί libmpv με χειριστήρια OSD του Nuvio. Πειραματικό.</string>
+  <string name="playback_engine_exoplayer_desc">Καλύτερη συμβατότητα με τις τρέχουσες δυνατότητες του Locflix.</string>
+  <string name="playback_engine_mvplayer_desc">Χρησιμοποιεί libmpv με χειριστήρια OSD του Locflix. Πειραματικό.</string>
   <!-- PlaybackAudioSettings -->
   <string name="audio_trailer_section">Τρέιλερ</string>
   <string name="audio_autoplay_trailers">Αυτόματη αναπαραγωγή τρέιλερ</string>
@@ -1058,7 +1058,7 @@
   <string name="debrid_disconnect">Αποσύνδεση</string>
   <string name="debrid_device_auth_connected">Το %1$s είναι συνδεδεμένο σε αυτή τη συσκευή.</string>
   <string name="debrid_device_auth_starting">Εκκίνηση ασφαλούς σύνδεσης…</string>
-  <string name="debrid_device_auth_instructions">Σαρώστε το QR και εισάγετε αυτόν τον κωδικό για έγκριση του Nuvio.</string>
+  <string name="debrid_device_auth_instructions">Σαρώστε το QR και εισάγετε αυτόν τον κωδικό για έγκριση του Locflix.</string>
   <string name="debrid_device_auth_code_copied">Ο κωδικός αντιγράφηκε.</string>
   <string name="debrid_device_auth_waiting">Αναμονή για έγκριση…</string>
   <string name="debrid_device_auth_failed">Δεν ήταν δυνατή η εκκίνηση της σύνδεσης.</string>
@@ -1219,7 +1219,7 @@
   <string name="trakt_stat_watched_hours">Ώρες παρακολούθησης</string>
   <string name="trakt_disconnect">Αποσύνδεση</string>
   <string name="trakt_disconnect_title">Αποσύνδεση Trakt;</string>
-  <string name="trakt_disconnect_subtitle">Αυτό θα αποσυνδέσει τον λογαριασμό σας Trakt από το Nuvio.</string>
+  <string name="trakt_disconnect_subtitle">Αυτό θα αποσυνδέσει τον λογαριασμό σας Trakt από το Locflix.</string>
   <string name="trakt_login">Σύνδεση</string>
   <string name="trakt_retry">Δοκιμή ξανά</string>
   <string name="trakt_back">Πίσω</string>
@@ -1238,7 +1238,7 @@
   <string name="tracking_accounts_title">Λογαριασμοί</string>
   <string name="tracking_accounts_subtitle">Σύνδεση και διαχείριση υπηρεσιών παρακολούθησης</string>
   <string name="tracking_sources_title">Πηγές</string>
-  <string name="tracking_sources_subtitle">Επιλέξτε από πού διαβάζει το Nuvio τη βιβλιοθήκη και την πρόοδο παρακολούθησης. Το scrobbling γίνεται σε κάθε συνδεδεμένη υπηρεσία.</string>
+  <string name="tracking_sources_subtitle">Επιλέξτε από πού διαβάζει το Locflix τη βιβλιοθήκη και την πρόοδο παρακολούθησης. Το scrobbling γίνεται σε κάθε συνδεδεμένη υπηρεσία.</string>
   <string name="tracking_trakt_features_title">Δυνατότητες Trakt</string>
   <string name="tracking_trakt_features_subtitle">Ιστορικό, κριτικές και προτάσεις ειδικά για το Trakt</string>
   <string name="tracking_simkl_features_title">Δυνατότητες Simkl</string>
@@ -1254,8 +1254,8 @@
   <string name="tracking_status_connecting">Σύνδεση</string>
   <string name="tracking_finish_connection">Ολοκλήρωση έγκρισης σύνδεσης</string>
   <string name="tracking_connecting_provider">Έναρξη σύνδεσης %1$s…</string>
-  <string name="tracking_watch_progress_dialog_subtitle">Επιλέξτε την υπηρεσία από την οποία διαβάζει το Nuvio την επανάληψη και τη Συνέχεια παρακολούθησης. Το scrobbling παραμένει ενεργό για κάθε συνδεδεμένη υπηρεσία.</string>
-  <string name="tracking_library_source_dialog_subtitle">Επιλέξτε την υπηρεσία από την οποία διαβάζει το Nuvio τη Βιβλιοθήκη. Το scrobbling αναπαραγωγής γίνεται σε κάθε συνδεδεμένη υπηρεσία.</string>
+  <string name="tracking_watch_progress_dialog_subtitle">Επιλέξτε την υπηρεσία από την οποία διαβάζει το Locflix την επανάληψη και τη Συνέχεια παρακολούθησης. Το scrobbling παραμένει ενεργό για κάθε συνδεδεμένη υπηρεσία.</string>
+  <string name="tracking_library_source_dialog_subtitle">Επιλέξτε την υπηρεσία από την οποία διαβάζει το Locflix τη Βιβλιοθήκη. Το scrobbling αναπαραγωγής γίνεται σε κάθε συνδεδεμένη υπηρεσία.</string>
   <string name="tracking_trakt_progress_required">Διαθέσιμο όταν το Trakt είναι η πηγή Προόδου παρακολούθησης</string>
   <string name="trakt_name">Trakt</string>
   <string name="simkl_name">Simkl</string>
@@ -1274,9 +1274,9 @@
   <string name="simkl_visit">Επίσκεψη στο Simkl</string>
   <string name="simkl_sync_info_action">Πώς λειτουργεί ο συγχρονισμός</string>
   <string name="simkl_sync_info_title">Πώς λειτουργεί ο συγχρονισμός Simkl</string>
-  <string name="simkl_sync_info_description">Το Nuvio ελέγχει αυτόματα το Simkl το πολύ μία φορά κάθε %1$d λεπτά. Οι αλλαγές που γίνονται μέσω άλλης εφαρμογής ή του ιστότοπου Simkl μπορεί να χρειαστούν τόσο χρόνο για να εμφανιστούν.</string>
+  <string name="simkl_sync_info_description">Το Locflix ελέγχει αυτόματα το Simkl το πολύ μία φορά κάθε %1$d λεπτά. Οι αλλαγές που γίνονται μέσω άλλης εφαρμογής ή του ιστότοπου Simkl μπορεί να χρειαστούν τόσο χρόνο για να εμφανιστούν.</string>
   <string name="simkl_sync_info_activity">Κάθε ανανέωση ελέγχει πρώτα αν το Simkl αναφέρει αλλαγές και κατεβάζει μόνο τις ενημερώσεις. Αυτό ακολουθεί τους κανόνες API του Simkl, μειώνει την περιττή χρήση δεδομένων και βοηθά στη σταθερότητα της υπηρεσίας.</string>
-  <string name="simkl_sync_info_manual">Οι αλλαγές που γίνονται στο Nuvio αποστέλλονται αμέσως στο Simkl. Χρησιμοποιήστε το Συγχρονισμός τώρα όποτε θέλετε το Nuvio να ελέγξει νωρίτερα για απομακρυσμένες αλλαγές.</string>
+  <string name="simkl_sync_info_manual">Οι αλλαγές που γίνονται στο Locflix αποστέλλονται αμέσως στο Simkl. Χρησιμοποιήστε το Συγχρονισμός τώρα όποτε θέλετε το Locflix να ελέγξει νωρίτερα για απομακρυσμένες αλλαγές.</string>
   <string name="simkl_sync_info_library_statuses">Οι σειρές που τοποθετούνται στις λίστες On Hold ή Dropped του Simkl κρύβονται από τη Συνέχεια παρακολούθησης. Παραμένουν κρυφές όσο βρίσκονται σε οποιαδήποτε από τις δύο λίστες.</string>
   <string name="simkl_sync_info_docs">Διαβάστε τον οδηγό συγχρονισμού Simkl</string>
   <string name="error_open_browser_failed">Αποτυχία ανοίγματος προγράμματος περιήγησης</string>
@@ -1514,8 +1514,8 @@
 • Η διεύθυνση IP σας θα είναι ορατή σε άλλους ομότιμους κόμβους (peers) στο δίκτυο
 • Είστε αποκλειστικά υπεύθυνοι για το περιεχόμενο που προσπελάζετε
 • Επιβεβαιώνετε ότι έχετε το νομικό δικαίωμα να κάνετε streaming αυτού του περιεχομένου στη δικαιοδοσία σας
-• Το Nuvio δεν φιλοξενεί, δεν διανέμει και δεν ελέγχει κανένα περιεχόμενο P2P
-• Το Nuvio δεν φέρει καμία ευθύνη για νομικές συνέπειες που προκύπτουν από τη χρήση του P2P streaming
+• Το Locflix δεν φιλοξενεί, δεν διανέμει και δεν ελέγχει κανένα περιεχόμενο P2P
+• Το Locflix δεν φέρει καμία ευθύνη για νομικές συνέπειες που προκύπτουν από τη χρήση του P2P streaming
 
 Χρησιμοποιείτε αυτή τη λειτουργία αποκλειστικά με δική σας ευθύνη. Το P2P μπορεί να απενεργοποιηθεί οποιαδήποτε στιγμή στις Ρυθμίσεις.</string>
   <string name="p2p_consent_enable">Ενεργοποίηση P2P</string>
@@ -2022,7 +2022,7 @@
   <string name="catalog_see_all_empty_title">Δεν υπάρχουν διαθέσιμα στοιχεία</string>
   <string name="catalog_see_all_empty_subtitle">Δοκιμάστε διαφορετικό κατάλογο ή ελέγξτε αργότερα</string>
   <!-- LayoutSelectionScreen -->
-  <string name="layout_selection_welcome">Καλώς ήρθατε στο Nuvio</string>
+  <string name="layout_selection_welcome">Καλώς ήρθατε στο Locflix</string>
   <string name="layout_selection_subtitle">Επιλέξτε τη διάταξη αρχικής οθόνης</string>
   <string name="layout_selection_continue">Συνέχεια</string>
   <!-- UpdatePromptDialog -->
@@ -2219,7 +2219,7 @@
   <string name="cd_test">Δοκιμή</string>
   <string name="cd_clear_search">Εκκαθάριση αναζήτησης</string>
   <string name="cd_unlink">Αποσύνδεση</string>
-  <string name="cd_nuvio_logo">NuvioTV</string>
+  <string name="cd_nuvio_logo">Locflix</string>
   <string name="cd_trakt_logo">Λογότυπο Trakt</string>
   <string name="cd_trakt_qr">QR ενεργοποίησης Trakt</string>
   <string name="cd_imdb">IMDb</string>
@@ -2230,7 +2230,7 @@
   <string name="cd_expand">Ανάπτυξη %1$s</string>
   <string name="cd_collapse">Σύμπτυξη %1$s</string>
   <string name="cd_qr_login">Κωδικός σύνδεσης QR</string>
-  <string name="cd_nuvio">Nuvio</string>
+  <string name="cd_nuvio">Locflix</string>
   <!-- Debug -->
   <string name="debug_signin_success">Η σύνδεση ολοκληρώθηκε με επιτυχία</string>
   <string name="debug_generate_description">Δημιουργήθηκε δοκιμαστικά στοιχείο %1$s #%2$d</string>
@@ -2370,7 +2370,7 @@
   <string name="collections_editor_tmdb_list_helper">Παράδειγμα: https://www.themoviedb.org/list/8504994 ή 8504994.</string>
   <string name="collections_editor_tmdb_person_id">ID προσώπου</string>
   <string name="collections_editor_tmdb_person_helper">Παράδειγμα: https://www.themoviedb.org/person/31-tom-hanks ή 31.</string>
-  <string name="collections_editor_tmdb_title_helper">Εμφανίζεται ως όνομα γραμμής/καρτέλας. Αν είναι κενό, το Nuvio δημιουργεί ένα από την πηγή.</string>
+  <string name="collections_editor_tmdb_title_helper">Εμφανίζεται ως όνομα γραμμής/καρτέλας. Αν είναι κενό, το Locflix δημιουργεί ένα από την πηγή.</string>
   <string name="collections_editor_tmdb_quick_genres">Γρήγορα είδη</string>
   <string name="collections_editor_tmdb_quick_languages">Γρήγορες γλώσσες</string>
   <string name="collections_editor_tmdb_quick_countries">Γρήγορες χώρες</string>
@@ -2540,7 +2540,7 @@
   <string name="autoplay_regex_preset_no_cam_ts">Χωρίς CAM/TS</string>
   <string name="autoplay_regex_preset_no_remux_hdr">Χωρίς REMUX/HDR</string>
   <!-- Playback settings sections -->
-  <string name="playback_player_internal_desc">Χρήση του ενσωματωμένου προγράμματος αναπαραγωγής NuvioTV</string>
+  <string name="playback_player_internal_desc">Χρήση του ενσωματωμένου προγράμματος αναπαραγωγής Locflix</string>
   <!-- Player runtime: torrent overlay + tracks -->
   <string name="player_torrent_peer_info">%1$d διανομείς · %2$d λήπτες</string>
   <string name="player_torrent_buffered_status">%1$s στην προσωρινή μνήμη · %2$s · %3$s</string>
@@ -3011,7 +3011,7 @@
   <string name="web_status_could_not_save">Δεν ήταν δυνατή η αποθήκευση</string>
   <string name="web_debrid_per_resolution">Ανά ανάλυση</string>
   <string name="settings_content_discovery_addons_subtitle">Διαχείριση πρόσθετων, σειράς καταλόγων και συλλογών</string>
-  <string name="licenses_attributions_premiumize_body">Το Nuvio συνδέεται με το Premiumize για έλεγχο ταυτότητας λογαριασμού, πρόσβαση στη βιβλιοθήκη cloud, ελέγχους προσωρινής μνήμης cache και λειτουργίες αναπαραγωγής στο cloud. Το Nuvio δεν συνδέεται ούτε υποστηρίζεται επίσημα από το Premiumize.</string>
+  <string name="licenses_attributions_premiumize_body">Το Locflix συνδέεται με το Premiumize για έλεγχο ταυτότητας λογαριασμού, πρόσβαση στη βιβλιοθήκη cloud, ελέγχους προσωρινής μνήμης cache και λειτουργίες αναπαραγωγής στο cloud. Το Locflix δεν συνδέεται ούτε υποστηρίζεται επίσημα από το Premiumize.</string>
   <string name="playback_net_http2_sub">Ενεργοποίηση του πρωτοκόλλου HTTP/2 για τις συνδέσεις δικτύου, επιτρέποντας πολύπλεξη αιτημάτων και ταχύτερους χρόνους χειραψίας.</string>
   <string name="web_stream_badge_importing">Εισαγωγή…</string>
   <string name="settings_content_discovery_subtitle">Πρόσθετα, plugins, κατάλογοι και πηγές ανακάλυψης</string>
@@ -3039,7 +3039,7 @@
   <string name="dv7_libdovi_mode_1_title">Λειτουργία 1 — MEL</string>
   <string name="dv7_libdovi_mode_row_title">Λειτουργία μετατροπής</string>
   <string name="external_auto_next_loading">Φόρτωση επόμενου επεισοδίου…</string>
-  <string name="licenses_attributions_torbox_body">Το Nuvio συνδέεται με το TorBox για έλεγχο ταυτότητας λογαριασμού, πρόσβαση στη βιβλιοθήκη cloud, ελέγχους προσωρινής μνήμης cache και λειτουργίες αναπαραγωγής στο cloud. Το Nuvio δεν συνδέεται ούτε υποστηρίζεται επίσημα από το TorBox.</string>
+  <string name="licenses_attributions_torbox_body">Το Locflix συνδέεται με το TorBox για έλεγχο ταυτότητας λογαριασμού, πρόσβαση στη βιβλιοθήκη cloud, ελέγχους προσωρινής μνήμης cache και λειτουργίες αναπαραγωγής στο cloud. Το Locflix δεν συνδέεται ούτε υποστηρίζεται επίσημα από το TorBox.</string>
   <string name="web_stream_badge_load_error">Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων διακριτικών ροής</string>
   <string name="web_debrid_save_settings">Αποθήκευση ρυθμίσεων</string>
   <string name="diag_label_dv_bridge">Γέφυρα DV</string>
@@ -3079,13 +3079,13 @@
   <string name="appearance_settings_style">Στυλ ρυθμίσεων</string>
   <string name="appearance_settings_style_subtitle">Επιλέξτε πώς εμφανίζονται οι οθόνες ρυθμίσεων</string>
   <string name="appearance_launcher_artwork">Εικόνα εκκίνησης</string>
-  <string name="appearance_launcher_artwork_subtitle">Επιλέξτε πώς εμφανίζεται το Nuvio στην αρχική οθόνη του TV σας</string>
+  <string name="appearance_launcher_artwork_subtitle">Επιλέξτε πώς εμφανίζεται το Locflix στην αρχική οθόνη του TV σας</string>
   <string name="appearance_app_icon_and_banner">Εικονίδιο εφαρμογής &amp; Banner</string>
   <string name="appearance_app_icon_and_banner_subtitle">Αλλαγή εικονιδίου εφαρμογής και banner</string>
   <string name="appearance_app_icon_picker_title">Επιλογή εικονιδίου εφαρμογής &amp; Banner</string>
   <string name="appearance_app_icon_picker_subtitle">Κάθε στυλ περιλαμβάνει αντίστοιχο τετράγωνο εικονίδιο και banner TV</string>
   <string name="appearance_app_icon_confirmation_title">Αλλαγή εικονιδίου εφαρμογής;</string>
-  <string name="appearance_app_icon_confirmation_message">Η αλλαγή σε %1$s θα κλείσει το Nuvio. Το banner TV μπορεί να απαιτήσει επανεκκίνηση της συσκευής για να ενημερωθεί. Επιλέξτε OK για να συνεχίσετε.</string>
+  <string name="appearance_app_icon_confirmation_message">Η αλλαγή σε %1$s θα κλείσει το Locflix. Το banner TV μπορεί να απαιτήσει επανεκκίνηση της συσκευής για να ενημερωθεί. Επιλέξτε OK για να συνεχίσετε.</string>
   <string name="appearance_app_icon_change_failed">Δεν ήταν δυνατή η αλλαγή του εικονιδίου και του banner. Δοκιμάστε ξανά.</string>
   <string name="appearance_app_icon_original">Αρχικό</string>
   <string name="appearance_app_icon_arctic_blue">Αρκτικό μπλε</string>
