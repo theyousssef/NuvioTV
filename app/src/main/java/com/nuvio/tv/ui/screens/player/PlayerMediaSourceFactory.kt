@@ -115,9 +115,11 @@ internal class PlayerMediaSourceFactory(private val context: Context) {
 
         val mediaItem = mediaItemBuilder.build()
 
-        val mp4SessionMode = !useParallelConnections && !isHls && !isDash &&
+        // Range sessions are HTTP-only; local content:// and file:// URIs go through DefaultDataSource.
+        val isHttp = isHttpUrl(url)
+        val mp4SessionMode = isHttp && !useParallelConnections && !isHls && !isDash &&
             resolvedMimeType == MimeTypes.VIDEO_MP4
-        val useChunkSessionSource = (useParallelConnections || mp4SessionMode) && !isHls && !isDash
+        val useChunkSessionSource = isHttp && (useParallelConnections || mp4SessionMode) && !isHls && !isDash
         parallelStartupPrefetchUnlocked.set(!useChunkSessionSource)
         val progressiveUpstreamFactory: DataSource.Factory = if (useChunkSessionSource) {
             if (mp4SessionMode) {
@@ -232,7 +234,9 @@ internal class PlayerMediaSourceFactory(private val context: Context) {
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
     }
 
-    private fun shouldUseVodCache(url: String): Boolean {
+    private fun shouldUseVodCache(url: String): Boolean = isHttpUrl(url)
+
+    private fun isHttpUrl(url: String): Boolean {
         val scheme = Uri.parse(url).scheme?.lowercase()
         return scheme == "https" || scheme == "http"
     }
