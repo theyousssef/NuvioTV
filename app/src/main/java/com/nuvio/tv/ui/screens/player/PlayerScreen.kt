@@ -67,6 +67,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -158,6 +159,7 @@ fun PlayerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val postPlayRecommendationState by viewModel.postPlayRecommendationUiState.collectAsState()
+    val ratingState by viewModel.ratingUiState.collectAsState()
     val effectiveAutoplayEnabled by viewModel.effectiveAutoplayEnabled.collectAsState(initial = false)
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -262,15 +264,50 @@ fun PlayerScreen(
         }
     }
 
+    // Action queued behind the rating window (exit / next episode / picked episode).
+    var pendingRatingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val runWithRatingPrompt: (PlayerRatingPromptSource, () -> Unit) -> Unit = { source, action ->
+        if (viewModel.shouldPromptRating(source)) {
+            pendingRatingAction = action
+            viewModel.openRatingPrompt(source)
+        } else {
+            action()
+        }
+    }
+    val openRatingFromPauseButton = {
+        pendingRatingAction = null
+        viewModel.openRatingPrompt(PlayerRatingPromptSource.PAUSE_BUTTON)
+    }
+    val dismissRatingPrompt = {
+        val pending = pendingRatingAction
+        pendingRatingAction = null
+        when (viewModel.dismissRatingPrompt()) {
+            PlayerRatingDismissAction.RETURN_TO_PAUSED_PLAYER -> viewModel.showControls()
+            PlayerRatingDismissAction.EXIT_PLAYER,
+            PlayerRatingDismissAction.PLAY_NEXT_EPISODE,
+            PlayerRatingDismissAction.PLAY_SELECTED_EPISODE -> pending?.invoke()
+            null -> Unit
+        }
+    }
+    val playNextEpisodeWithRating = {
+        runWithRatingPrompt(PlayerRatingPromptSource.NEXT_EPISODE) {
+            viewModel.onEvent(PlayerEvent.OnPlayNextEpisode)
+        }
+    }
+
     val handleBackPress = handleBackPress@{
         if (externalHandoffInProgress) return@handleBackPress
+        if (ratingState.isVisible) {
+            dismissRatingPrompt()
+            return@handleBackPress
+        }
         if (postPlayRecommendationState.canReturnToPlayer && !uiState.playbackEnded) {
             returnToPlayerFromPostPlay()
             viewModel.hideControls()
         } else if (postPlayRecommendationState.isVisible || postPlayRecommendationState.isLoadingRecommendation) {
-            exitPlayer()
+            runWithRatingPrompt(PlayerRatingPromptSource.EXIT) { exitPlayer() }
         } else if (shouldConfirmNextEpisodeOnEnd) {
-            returnToDetailsFromEndPrompt()
+            runWithRatingPrompt(PlayerRatingPromptSource.EXIT) { returnToDetailsFromEndPrompt() }
         } else if (uiState.error != null) {
             exitPlayerFromError()
         } else if (uiState.showAudioOverlay || uiState.showSubtitleOverlay) {
@@ -314,7 +351,7 @@ fun PlayerScreen(
         } else if (uiState.showControls) {
             viewModel.hideControls()
         } else {
-            exitPlayer()
+            runWithRatingPrompt(PlayerRatingPromptSource.EXIT) { exitPlayer() }
         }
     }
 
@@ -456,7 +493,9 @@ fun PlayerScreen(
         uiState.showSpeedDialog,
         shouldConfirmNextEpisodeOnEnd,
         postPlayRecommendationState.isVisible,
+        ratingState.isVisible,
     ) {
+        if (ratingState.isVisible) return@LaunchedEffect
         if (shouldConfirmNextEpisodeOnEnd || postPlayRecommendationState.isVisible) return@LaunchedEffect
         if (uiState.error != null) return@LaunchedEffect
         if (uiState.showControls && !uiState.showEpisodesPanel && !uiState.showSourcesPanel &&
@@ -556,7 +595,7 @@ fun PlayerScreen(
                     }
                 }
 
-                if (keyEvent.nativeKeyEvent.keyCode != KeyEvent.KEYCODE_CAPTIONS) {
+                if (keyEvent.nativeKeyEvent.keyCode != KeyEvent.KEYCODE_CAPTIONS || ratingState.isVisible) {
                     return@onPreviewKeyEvent false
                 }
 
@@ -1022,7 +1061,8 @@ fun PlayerScreen(
 
         PauseOverlay(
             visible = uiState.showPauseOverlay && uiState.error == null &&
-                !uiState.showLoadingOverlay && !postPlayRecommendationState.isVisible,
+                !uiState.showLoadingOverlay && !postPlayRecommendationState.isVisible &&
+                !ratingState.isVisible,
             onClose = { viewModel.onEvent(PlayerEvent.OnDismissPauseOverlay) },
             title = uiState.title,
             logo = uiState.logo,
@@ -1088,6 +1128,15 @@ fun PlayerScreen(
             torrentBufferingProgress = uiState.torrentBufferingProgress
         )
 
+        PlayerRatingOverlay(
+            state = ratingState,
+            onNumberPressed = viewModel::onRatingNumberPressed,
+            onBack = handleBackPress,
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(10f)
+        )
+
         // Error state
         if (uiState.error != null) {
             ErrorOverlay(
@@ -1108,7 +1157,9 @@ fun PlayerScreen(
         if (endPromptEpisode != null) {
             NextEpisodeEndPromptOverlay(
                 nextEpisode = endPromptEpisode,
-                onContinue = continueToNextEpisodeFromEndPrompt,
+                onContinue = {
+                    runWithRatingPrompt(PlayerRatingPromptSource.NEXT_EPISODE, continueToNextEpisodeFromEndPrompt)
+                },
                 onReturnToDetails = returnToDetailsFromEndPrompt
             )
         }
@@ -1185,7 +1236,7 @@ fun PlayerScreen(
             nextEpisodeFocusRequester = nextEpisodeFocusRequester,
             progressBarFocusRequester = if (uiState.showControls) progressBarFocusRequester else null,
             leftFocusRequester = if (skipButtonActuallyVisible) skipIntroFocusRequester else null,
-            onPlayNext = { viewModel.onEvent(PlayerEvent.OnPlayNextEpisode) },
+            onPlayNext = playNextEpisodeWithRating,
             onContinueStillWatching = { viewModel.onEvent(PlayerEvent.OnStillWatchingContinue) },
             onDismissStillWatching = { viewModel.onEvent(PlayerEvent.OnDismissStillWatchingPrompt) },
             modifier = Modifier
@@ -1276,7 +1327,8 @@ fun PlayerScreen(
                     else -> null
                 },
                 onPlayPause = { viewModel.onEvent(PlayerEvent.OnPlayPause) },
-                onPlayNextEpisode = { viewModel.onEvent(PlayerEvent.OnPlayNextEpisode) },
+                onPlayNextEpisode = playNextEpisodeWithRating,
+                onRate = if (viewModel.canRateCurrentItem()) openRatingFromPauseButton else null,
                 onSeekForward = { viewModel.onEvent(PlayerEvent.OnSeekForward) },
                 onSeekBackward = { viewModel.onEvent(PlayerEvent.OnSeekBackward) },
                 onSeekTo = { viewModel.onEvent(PlayerEvent.OnSeekTo(it)) },
@@ -1463,7 +1515,16 @@ fun PlayerScreen(
                     onReloadEpisodeStreams = { viewModel.onEvent(PlayerEvent.OnReloadEpisodeStreams) },
                     onSeasonSelected = { viewModel.onEvent(PlayerEvent.OnEpisodeSeasonSelected(it)) },
                     onAddonFilterSelected = { viewModel.onEvent(PlayerEvent.OnEpisodeAddonFilterSelected(it)) },
-                    onEpisodeSelected = { viewModel.onEvent(PlayerEvent.OnEpisodeSelected(it)) },
+                    onEpisodeSelected = { video ->
+                        val select = { viewModel.onEvent(PlayerEvent.OnEpisodeSelected(video)) }
+                        val isOtherEpisode = video.season != uiState.currentSeason ||
+                            video.episode != uiState.currentEpisode
+                        if (isOtherEpisode) {
+                            runWithRatingPrompt(PlayerRatingPromptSource.EPISODE_PICK, select)
+                        } else {
+                            select()
+                        }
+                    },
                     onStreamSelected = { viewModel.onEvent(PlayerEvent.OnEpisodeStreamSelected(it)) },
                     modifier = Modifier.align(Alignment.CenterEnd)
                 )
@@ -2050,6 +2111,7 @@ private fun PlayerControlsOverlay(
     progressBarUpFocusRequester: FocusRequester? = null,
     onPlayPause: () -> Unit,
     onPlayNextEpisode: () -> Unit,
+    onRate: (() -> Unit)? = null,
     onSeekForward: () -> Unit,
     onSeekBackward: () -> Unit,
     onSeekTo: (Long) -> Unit,
@@ -2251,6 +2313,17 @@ private fun PlayerControlsOverlay(
                         onDownKey = onHideControls,
                         onFocused = onResetHideTimer
                     )
+
+                    if (onRate != null && !uiState.isPlaying) {
+                        ControlButton(
+                            icon = Icons.Default.StarBorder,
+                            contentDescription = stringResource(R.string.player_rating_button),
+                            onClick = onRate,
+                            upFocusRequester = progressUpTarget,
+                            onDownKey = onHideControls,
+                            onFocused = onResetHideTimer
+                        )
+                    }
 
                     if (showNextEpisodeButton) {
                         ControlButton(

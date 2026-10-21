@@ -94,6 +94,9 @@ class PlayerViewModel @Inject constructor(
     private val subtitleFileCache: com.nuvio.tv.core.player.SubtitleFileCache,
     private val tvRecommendationManager: com.nuvio.tv.core.recommendations.TvRecommendationManager,
     private val localMediaStreamSource: com.nuvio.tv.core.localmedia.LocalMediaStreamSource,
+    private val traktRatingsService: com.nuvio.tv.data.repository.TraktRatingsService,
+    private val traktTrackingScrobbler: com.nuvio.tv.data.repository.TraktTrackingScrobbler,
+    private val playerRatingDataStore: com.nuvio.tv.data.local.PlayerRatingDataStore,
     profileManager: com.nuvio.tv.core.profile.ProfileManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -166,8 +169,37 @@ class PlayerViewModel @Inject constructor(
         scope = viewModelScope
     )
 
+    private val ratingController = PlayerRatingController(
+        playbackController = controller,
+        traktRatingsService = traktRatingsService,
+        traktTrackingScrobbler = traktTrackingScrobbler,
+        ratingDataStore = playerRatingDataStore,
+        scope = viewModelScope
+    )
+
     val uiState: StateFlow<PlayerUiState>
         get() = controller.uiState
+
+    val ratingUiState: StateFlow<PlayerRatingUiState>
+        get() = ratingController.uiState
+
+    fun canRateCurrentItem(): Boolean = ratingController.isRateable()
+
+    /** True when [source] should open the rating window before its action runs. */
+    fun shouldPromptRating(source: PlayerRatingPromptSource, userInitiated: Boolean = true): Boolean =
+        ratingController.shouldPrompt(source, userInitiated)
+
+    fun openRatingPrompt(source: PlayerRatingPromptSource) {
+        ratingController.open(source)
+    }
+
+    /** Closes the rating window; returns what Back should do next, or null if it was closed. */
+    fun dismissRatingPrompt(): PlayerRatingDismissAction? =
+        ratingController.dismiss()?.let(PlayerRatingPolicy::dismissAction)
+
+    fun onRatingNumberPressed(value: Int) {
+        ratingController.onNumberPressed(value)
+    }
 
     val playbackTimeline: StateFlow<PlaybackTimelineState>
         get() = controller.playbackTimeline
@@ -229,6 +261,10 @@ class PlayerViewModel @Inject constructor(
 
     fun hideControls() {
         controller.hideControls()
+    }
+
+    fun showControls() {
+        controller.showControlsTemporarily()
     }
 
     fun attachHostActivity(activity: android.app.Activity?) {

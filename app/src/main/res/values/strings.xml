@@ -3219,4 +3219,24 @@
     <string name="stream_test_video_bitrate">Average Video Bitrate: %1$s</string>
     <string name="stream_test_error_connection">Connection failed. The last played stream link may have expired or is unreachable. Please play the video again and retry.</string>
 
+    <!-- In-player rating window -->
+    <string name="player_rating_button">Rate</string>
+    <string name="player_rating_label_episode">Rate this episode</string>
+    <string name="player_rating_label_movie">Rate this movie</string>
+    <string name="player_rating_reaction_meh">meh..</string>
+    <string name="player_rating_reaction_okay">okay..</string>
+    <string name="player_rating_reaction_great">Great</string>
+    <string name="player_rating_reaction_superb">SUPERB !</string>
+    <string name="player_rating_reaction_ninja">TOTALLY NINJA !</string>
+    <string name="player_rating_hint_back_player">Back to return to the player</string>
+    <string name="player_rating_hint_back_exit">Back to exit the player</string>
+    <string name="player_rating_hint_back_next">Back to play the next episode</string>
+    <string name="player_rating_hint_back_episode">Back to play the selected episode</string>
+    <string name="player_rating_hint_clear">Press the selected number again to clear it</string>
+    <string name="player_rating_status_syncing">Sending to Trakt…</string>
+    <string name="player_rating_status_synced">Synced with Trakt</string>
+    <string name="player_rating_status_not_connected">Trakt isn\'t connected. Rating saved on this device only.</string>
+    <string name="player_rating_status_failed">Couldn\'t reach Trakt. Rating saved here, will retry later.</string>
+    <string name="player_rating_cd_number">Rate %1$d</string>
+
 </resources>

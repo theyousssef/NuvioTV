@@ -35,6 +35,9 @@ import com.nuvio.tv.data.remote.dto.trakt.TraktUserStatsResponseDto
 import com.nuvio.tv.data.remote.dto.trakt.TraktWatchedMovieItemDto
 import com.nuvio.tv.data.remote.dto.trakt.TraktWatchedShowItemDto
 import com.nuvio.tv.data.remote.dto.trakt.TraktHiddenItemDto
+import com.nuvio.tv.data.remote.dto.trakt.TraktRatedItemDto
+import com.nuvio.tv.data.remote.dto.trakt.TraktRatingsMutationResponseDto
+import com.nuvio.tv.data.remote.dto.trakt.TraktRatingsRequestDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -379,4 +382,22 @@ interface TraktApi {
         @Header("Authorization") authorization: String,
         @Body body: TraktListItemsMutationRequestDto
     ): Response<TraktListItemsMutationResponseDto>
+
+    @GET("sync/ratings/{type}")
+    suspend fun getRatings(
+        @Header("Authorization") authorization: String,
+        @Path("type") type: String
+    ): Response<List<TraktRatedItemDto>>
+
+    @POST("sync/ratings")
+    suspend fun addRatings(
+        @Header("Authorization") authorization: String,
+        @Body body: TraktRatingsRequestDto
+    ): Response<TraktRatingsMutationResponseDto>
+
+    @POST("sync/ratings/remove")
+    suspend fun removeRatings(
+        @Header("Authorization") authorization: String,
+        @Body body: TraktRatingsRequestDto
+    ): Response<TraktRatingsMutationResponseDto>
 }
