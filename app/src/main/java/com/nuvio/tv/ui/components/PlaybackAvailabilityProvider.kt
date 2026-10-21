@@ -38,7 +38,9 @@ internal class PlaybackAvailabilityViewModel @Inject constructor(
     }
 
     val availability = combine(addonRepository.getInstalledAddons(), enabledScrapers) { addons, scrapers ->
-        PlaybackAvailability(addons, scrapers, isLoaded = true, cachedMeta = metaRepository::getCachedMeta)
+        PlaybackAvailability(
+            addons, scrapers, isLoaded = true, localMedia = true, cachedMeta = metaRepository::getCachedMeta
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PlaybackAvailability())
 }
 

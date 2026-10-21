@@ -50,7 +50,9 @@ class PlaybackAvailabilityViewModelTest {
             }
             runCurrent()
             assertTrue(viewModel.availability.value.isLoaded)
-            assertFalse(viewModel.availability.value.canStream("movie", "tt123"))
+            assertTrue(viewModel.availability.value.canStream("movie", "tt123"))
+            assertTrue(viewModel.availability.value.canStream("series", "tt123:1:1"))
+            assertFalse(viewModel.availability.value.copy(localMedia = false).canStream("movie", "tt123"))
 
             val addon = Addon(
                 id = "addon", name = "Addon", version = "1", description = null, logo = null,
@@ -59,10 +61,10 @@ class PlaybackAvailabilityViewModelTest {
             )
             addons.value = listOf(addon)
             runCurrent()
-            assertTrue(viewModel.availability.value.canStream("movie", "tt123"))
+            assertTrue(viewModel.availability.value.copy(localMedia = false).canStream("movie", "tt123"))
             addons.value = listOf(addon.copy(enabled = false))
             runCurrent()
-            assertFalse(viewModel.availability.value.canStream("movie", "tt123"))
+            assertFalse(viewModel.availability.value.copy(localMedia = false).canStream("movie", "tt123"))
 
             scrapers.value = listOf(ScraperInfo(
                 id = "scraper", name = "Scraper", description = "", version = "1", filename = "scraper.js",
@@ -70,14 +72,14 @@ class PlaybackAvailabilityViewModelTest {
                 contentLanguage = emptyList(), repositoryId = "repo", formats = null
             ))
             runCurrent()
-            assertTrue(viewModel.availability.value.canStream("movie", "tt123") == AppFeaturePolicy.pluginsEnabled)
+            assertTrue(viewModel.availability.value.copy(localMedia = false).canStream("movie", "tt123") == AppFeaturePolicy.pluginsEnabled)
             pluginsEnabled.value = false
             runCurrent()
-            assertFalse(viewModel.availability.value.canStream("movie", "tt123"))
+            assertFalse(viewModel.availability.value.copy(localMedia = false).canStream("movie", "tt123"))
             addons.value = emptyList()
             scrapers.value = emptyList()
             runCurrent()
-            assertFalse(viewModel.availability.value.canStream("movie", "tt123"))
+            assertFalse(viewModel.availability.value.copy(localMedia = false).canStream("movie", "tt123"))
 
             coVerify(exactly = 0) { addonRepository.fetchAddon(any()) }
             verify(exactly = 0) { metaRepository.getMetaFromAllAddons(any(), any(), any()) }

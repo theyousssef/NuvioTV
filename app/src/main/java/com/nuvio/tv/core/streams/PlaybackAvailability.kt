@@ -20,6 +20,8 @@ internal data class PlaybackAvailability(
     val addons: List<Addon> = emptyList(),
     val scrapers: List<ScraperInfo> = emptyList(),
     val isLoaded: Boolean = false,
+    /** Local files on the device are matched by title, so any movie or episode may have a source. */
+    val localMedia: Boolean = false,
     private val cachedMeta: (String, String) -> Meta? = { _, _ -> null }
 ) {
     fun canStream(
@@ -27,8 +29,13 @@ internal data class PlaybackAvailability(
         videoId: String,
         contentId: String = videoId,
         video: Video? = null
-    ): Boolean = video?.takeIf { it.id == videoId }?.streams?.isNotEmpty() == true ||
+    ): Boolean = (localMedia && type in LOCAL_MEDIA_TYPES) ||
+        video?.takeIf { it.id == videoId }?.streams?.isNotEmpty() == true ||
         cachedMeta(type, contentId)?.videos?.any { it.id == videoId && it.streams.isNotEmpty() } == true ||
         addons.any { it.enabled && it.supportsStreamResource(type, videoId) } ||
         scrapers.any { it.enabled && it.supportsType(type) }
+
+    private companion object {
+        val LOCAL_MEDIA_TYPES = setOf("movie", "series")
+    }
 }

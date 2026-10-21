@@ -22,6 +22,16 @@ class PlaybackAvailabilityTest {
     }
 
     @Test
+    fun `local media makes movies and episodes playable without other sources`() {
+        val available = PlaybackAvailability(localMedia = true)
+        assertTrue(available.canStream("movie", "tt123"))
+        assertTrue(available.canStream("series", "tt123:1:1"))
+        assertTrue(available.canStream("movie", "tmdb:123"))
+        assertFalse(available.canStream("channel", "channel:1"))
+        assertFalse(available.copy(localMedia = false).canStream("movie", "tt123"))
+    }
+
+    @Test
     fun `addon must be enabled and match the type and video prefix`() {
         val available = PlaybackAvailability(addons = listOf(addon()))
         assertTrue(available.canStream("movie", "tt123"))
