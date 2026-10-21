@@ -41,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -49,6 +48,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
@@ -61,7 +63,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -380,63 +381,106 @@ private fun RatingNumber(
                 .background(if (selected) RatingGold else Color.White, RoundedCornerShape(2.dp))
         )
 
-        val numberModifier = Modifier.graphicsLayer {
-            val s = focusScale * pulse.value
-            scaleX = s
-            scaleY = s
-        }
-        val baseStyle = TextStyle(
-            fontSize = 140.sp,
-            fontWeight = FontWeight.Black,
-            textAlign = TextAlign.Center
-        )
-        Box(modifier = numberModifier, contentAlignment = Alignment.Center) {
-            // Empty outline (the "unfilled star").
-            Text(
-                text = value.toString(),
-                style = baseStyle.copy(drawStyle = Stroke(width = strokeWidthPx)),
-                color = Color.White.copy(alpha = 0.55f + 0.45f * focusGlow),
-                maxLines = 1,
-                softWrap = false
+        val glyph = rememberNumberGlyph(value)
+        val outlineColor = Color.White.copy(alpha = 0.55f + 0.45f * focusGlow)
+        val goldBrush = remember(glyph) {
+            Brush.verticalGradient(
+                listOf(Color(0xFFFFE27A), RatingGold, RatingGoldDeep),
+                startY = glyph.bounds.top,
+                endY = glyph.bounds.bottom
             )
-            // Gold pour, clipped to a rising wave.
-            if (fill.value > 0f) {
-                Text(
-                    text = value.toString(),
-                    style = baseStyle.copy(
-                        brush = Brush.verticalGradient(listOf(Color(0xFFFFE27A), RatingGold, RatingGoldDeep))
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    modifier = Modifier.drawWithContent {
-                        val level = fill.value
-                        if (level >= 0.999f) {
-                            drawContent()
-                        } else {
-                            // The glyph sits in roughly the middle 70% of the line box.
-                            val top = size.height * 0.15f
-                            val bottom = size.height * 0.88f
-                            val surface = bottom - (bottom - top) * level
-                            val amplitude = 7f * sin(PI.toFloat() * level)
-                            val phase = level * 4f * PI.toFloat()
-                            val wave = Path().apply {
-                                moveTo(0f, size.height)
-                                lineTo(0f, surface)
-                                val steps = 24
-                                for (i in 0..steps) {
-                                    val x = size.width * i / steps
-                                    val y = surface + amplitude * sin(phase + i * (2f * PI.toFloat() / steps) * 1.5f)
-                                    lineTo(x, y)
-                                }
-                                lineTo(size.width, size.height)
-                                close()
-                            }
-                            clipPath(wave) { this@drawWithContent.drawContent() }
+        }
+        val density = LocalDensity.current
+        val boxWidth = with(density) { (glyph.bounds.width + NUMBER_PAD_PX * 2).toDp() }
+        val boxHeight = with(density) { (glyph.bounds.height + NUMBER_PAD_PX * 2).toDp() }
+        Canvas(
+            modifier = Modifier
+                .size(boxWidth, boxHeight)
+                .graphicsLayer {
+                    val s = focusScale * pulse.value
+                    scaleX = s
+                    scaleY = s
+                }
+        ) {
+            // Glyph path is in its own coordinates; centre it on its bounds.
+            val dx = size.width / 2f - glyph.bounds.center.x
+            val dy = size.height / 2f - glyph.bounds.center.y
+            translate(dx, dy) {
+                // Empty outline (the "unfilled star"); outer half stays visible around the gold.
+                drawPath(glyph.path, color = outlineColor, style = Stroke(width = strokeWidthPx))
+                val level = fill.value
+                if (level >= 0.999f) {
+                    drawPath(glyph.path, brush = goldBrush)
+                } else if (level > 0f) {
+                    // Gold pour, clipped to a rising wave.
+                    val top = glyph.bounds.top
+                    val bottom = glyph.bounds.bottom
+                    val left = glyph.bounds.left - NUMBER_PAD_PX
+                    val right = glyph.bounds.right + NUMBER_PAD_PX
+                    val surface = bottom - (bottom - top) * level
+                    val amplitude = 7f * sin(PI.toFloat() * level)
+                    val phase = level * 4f * PI.toFloat()
+                    val wave = Path().apply {
+                        moveTo(left, bottom + NUMBER_PAD_PX)
+                        lineTo(left, surface)
+                        val steps = 24
+                        for (i in 0..steps) {
+                            val x = left + (right - left) * i / steps
+                            val y = surface + amplitude * sin(phase + i * (2f * PI.toFloat() / steps) * 1.5f)
+                            lineTo(x, y)
                         }
+                        lineTo(right, bottom + NUMBER_PAD_PX)
+                        close()
                     }
-                )
+                    clipPath(wave) { drawPath(glyph.path, brush = goldBrush) }
+                }
             }
         }
+    }
+}
+
+private const val NUMBER_PAD_PX = 24f
+
+/** Extra squeeze between the digits of "10", as a fraction of the font size. */
+private const val TWO_DIGIT_TIGHTEN_EM = 0.06f
+
+private class NumberGlyph(val path: Path, val bounds: Rect)
+
+/**
+ * The number's outline as a single clean path. Font glyphs (Roboto's 6, 8, 9...) are built
+ * from overlapping contours, so stroking them directly shows the seams; a UNION of the outline
+ * with itself merges those contours into one non-overlapping shape before we stroke/fill it.
+ */
+@Composable
+private fun rememberNumberGlyph(value: Int): NumberGlyph {
+    val density = LocalDensity.current
+    val textSizePx = with(density) { 140.sp.toPx() }
+    return remember(value, textSizePx) {
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = textSizePx
+            typeface = if (android.os.Build.VERSION.SDK_INT >= 28) {
+                android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, 900, false)
+            } else {
+                android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            }
+        }
+        val text = value.toString()
+        val raw = android.graphics.Path()
+        var x = 0f
+        text.forEachIndexed { i, ch ->
+            val single = android.graphics.Path()
+            paint.getTextPath(ch.toString(), 0, 1, x, 0f, single)
+            raw.addPath(single)
+            x += paint.measureText(ch.toString())
+            if (i < text.lastIndex) x -= textSizePx * TWO_DIGIT_TIGHTEN_EM
+        }
+        val merged = android.graphics.Path().apply {
+            op(raw, android.graphics.Path(), android.graphics.Path.Op.UNION)
+        }
+        val r = android.graphics.RectF()
+        @Suppress("DEPRECATION")
+        merged.computeBounds(r, true)
+        NumberGlyph(merged.asComposePath(), Rect(r.left, r.top, r.right, r.bottom))
     }
 }
 
