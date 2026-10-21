@@ -1,13 +1,18 @@
 package com.nuvio.tv.data.repository
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.nuvio.tv.core.network.NetworkResult
 import com.nuvio.tv.data.remote.api.TraktApi
 import com.nuvio.tv.domain.model.Meta
 import com.nuvio.tv.domain.model.Video
 import com.nuvio.tv.domain.repository.MetaRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -16,7 +21,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.yield
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -248,55 +255,81 @@ class TraktEpisodeMappingService @Inject constructor(
             deferred.completeExceptionally(e)
             emptyList()
         } finally {
-            cacheMutex.withLock { addonEpisodesInFlight.remove(cacheKey) }
+            // NonCancellable: a cancelled owner must still clear its flight, or the
+            // failed deferred would be reused for this show for the app's lifetime.
+            withContext(NonCancellable) {
+                cacheMutex.withLock { addonEpisodesInFlight.remove(cacheKey) }
+            }
         }
     }
 
-    private suspend fun getTraktEpisodes(showLookupId: String): List<EpisodeMappingEntry> {
-        cacheMutex.withLock {
-            traktEpisodesCache[showLookupId]?.let { return it }
-        }
+    @VisibleForTesting
+    internal suspend fun getTraktEpisodes(showLookupId: String): List<EpisodeMappingEntry> {
+        while (true) {
+            cacheMutex.withLock {
+                traktEpisodesCache[showLookupId]?.let { return it }
+            }
 
-        val existingDeferred = cacheMutex.withLock { traktEpisodesInFlight[showLookupId] }
-        if (existingDeferred != null) {
-            return try { existingDeferred.await() } catch (_: Exception) { emptyList() }
-        }
+            val deferred = CompletableDeferred<List<EpisodeMappingEntry>>()
+            val existing = cacheMutex.withLock {
+                traktEpisodesCache[showLookupId]?.let { return it }
+                traktEpisodesInFlight[showLookupId]
+                    ?: null.also { traktEpisodesInFlight[showLookupId] = deferred }
+            }
+            if (existing != null) {
+                try {
+                    return existing.await()
+                } catch (e: CancellationException) {
+                    // The fetch we waited on was cancelled, not us: fetch it ourselves.
+                    currentCoroutineContext().ensureActive()
+                    yield()
+                    continue
+                } catch (_: Exception) {
+                    return emptyList()
+                }
+            }
 
-        val deferred = CompletableDeferred<List<EpisodeMappingEntry>>()
-        val weOwn = cacheMutex.withLock {
-            traktEpisodesCache[showLookupId]?.let { return it }
-            if (traktEpisodesInFlight.containsKey(showLookupId)) {
-                false
-            } else {
-                traktEpisodesInFlight[showLookupId] = deferred
-                true
+            // The flight must always be settled and removed, also when this fetch is
+            // cancelled (e.g. a Trakt refresh superseded by a newer one). An orphaned
+            // flight made every later lookup of this show wait forever, which hung the
+            // whole Continue Watching snapshot fetch until it was cancelled again.
+            try {
+                val traktEpisodes = fetchTraktEpisodes(showLookupId)
+                if (traktEpisodes.isNotEmpty()) {
+                    cacheMutex.withLock {
+                        traktEpisodesCache[showLookupId] = traktEpisodes
+                    }
+                }
+                deferred.complete(traktEpisodes)
+                return traktEpisodes
+            } catch (e: Throwable) {
+                deferred.completeExceptionally(e)
+                throw e
+            } finally {
+                withContext(NonCancellable) {
+                    cacheMutex.withLock { traktEpisodesInFlight.remove(showLookupId, deferred) }
+                }
             }
         }
-        if (!weOwn) {
-            val other = cacheMutex.withLock { traktEpisodesInFlight[showLookupId] }
-            return try { other?.await() ?: emptyList() } catch (_: Exception) { emptyList() }
-        }
+    }
 
+    private suspend fun fetchTraktEpisodes(showLookupId: String): List<EpisodeMappingEntry> {
         val seasonsResponse = traktAuthService.executeAuthorizedRequest { authHeader ->
             traktApi.getShowSeasons(
                 authorization = authHeader,
                 id = showLookupId,
                 extended = "episodes"
             )
-        } ?: run {
-            cleanupTraktFlight(showLookupId)
-            return emptyList()
-        }
+        } ?: return emptyList()
         if (!seasonsResponse.isSuccessful) {
             Log.w(
                 TAG,
                 "getTraktEpisodes: seasons request failed code=${seasonsResponse.code()} id=$showLookupId"
             )
-            cleanupTraktFlight(showLookupId)
             return emptyList()
         }
 
-        val traktEpisodes = seasonsResponse.body()
+        return seasonsResponse.body()
             .orEmpty()
             .asSequence()
             .filter { (it.number ?: 0) > 0 }
@@ -314,19 +347,6 @@ class TraktEpisodeMappingService @Inject constructor(
                     }
             }
             .toList()
-
-        if (traktEpisodes.isNotEmpty()) {
-            cacheMutex.withLock {
-                traktEpisodesCache[showLookupId] = traktEpisodes
-            }
-        }
-        deferred.complete(traktEpisodes)
-        cleanupTraktFlight(showLookupId)
-        return traktEpisodes
-    }
-
-    private suspend fun cleanupTraktFlight(showLookupId: String) {
-        cacheMutex.withLock { traktEpisodesInFlight.remove(showLookupId) }
     }
 
     private fun cacheKey(

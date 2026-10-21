@@ -217,6 +217,10 @@ class TraktProgressService @Inject constructor(
     private var lastKnownMoviesWatchedAt: String? = null
     @Volatile
     private var lastKnownEpisodeActivityFingerprint: String? = null
+    /** Set when last_activities changed and cleared once a refresh completes, so a
+     *  cancelled refresh does not leave that change unfetched. */
+    @Volatile
+    private var activityRefreshPending: Boolean = false
     @Volatile
     private var lastManualRefreshSignalMs: Long = 0L
     @Volatile
@@ -318,6 +322,7 @@ class TraktProgressService @Inject constructor(
         lastKnownActivityFingerprint = null
         lastKnownMoviesWatchedAt = null
         lastKnownEpisodeActivityFingerprint = null
+        activityRefreshPending = false
         lastManualRefreshSignalMs = 0L
         metadataWarmupScheduled = false
         refreshIntervalMs = baseRefreshIntervalMs
@@ -1039,8 +1044,20 @@ class TraktProgressService @Inject constructor(
 
         val force = System.currentTimeMillis() < forceRefreshUntilMs
 
-        if (!force && !hasActivityChanged()) {
-            return
+        // hasActivityChanged() records the new fingerprint right away. Remember that a
+        // change is still unfetched until a snapshot lands, so a refresh cancelled
+        // mid-fetch (collectLatest) is not followed by polls that skip it as "unchanged"
+        // and leave Continue Watching without Trakt's playback for the whole session.
+        if (!force) {
+            if (hasActivityChanged()) activityRefreshPending = true
+            if (!shouldFetchRemoteSnapshot(
+                    force = false,
+                    activityRefreshPending = activityRefreshPending,
+                    hasLoadedRemoteProgress = hasLoadedRemoteProgress.value
+                )
+            ) {
+                return
+            }
         }
 
         // Capture the generation at the start of the refresh. If the profile
@@ -1102,6 +1119,7 @@ class TraktProgressService @Inject constructor(
             val visibleSnapshot = suppressKnownWatchedPlayback(snapshot)
             remoteProgress.value = visibleSnapshot
             hasLoadedRemoteProgress.value = true
+            activityRefreshPending = false
             reconcileOptimistic(visibleSnapshot)
             hydrateMetadata(visibleSnapshot)
         }
@@ -2924,3 +2942,14 @@ class TraktProgressService @Inject constructor(
         return minutes * 60_000L
     }
 }
+
+/**
+ * Whether a Trakt refresh poll has to fetch the progress snapshot. Forced refreshes always
+ * do; otherwise only when last_activities changed since the last completed fetch, or when no
+ * snapshot was ever loaded (a cancelled first fetch must not leave Continue Watching empty).
+ */
+internal fun shouldFetchRemoteSnapshot(
+    force: Boolean,
+    activityRefreshPending: Boolean,
+    hasLoadedRemoteProgress: Boolean
+): Boolean = force || activityRefreshPending || !hasLoadedRemoteProgress
