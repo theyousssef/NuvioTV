@@ -24,7 +24,9 @@ data class CachedStreamLink(
     val sources: List<String>? = null,
     val bingeGroup: String? = null,
     val contentLanguage: String? = null,
-    val year: String? = null
+    val year: String? = null,
+    val addonName: String? = null,
+    val streamDescription: String? = null
 )
 
 @Singleton
@@ -52,7 +54,9 @@ class StreamLinkCacheDataStore @Inject constructor(
         sources: List<String>? = null,
         bingeGroup: String? = null,
         contentLanguage: String? = null,
-        year: String? = null
+        year: String? = null,
+        addonName: String? = null,
+        streamDescription: String? = null
     ) {
         val payload = JSONObject().apply {
             put("url", url)
@@ -68,6 +72,8 @@ class StreamLinkCacheDataStore @Inject constructor(
             bingeGroup?.let { put("bingeGroup", it) }
             contentLanguage?.let { put("contentLanguage", it) }
             year?.let { put("year", it) }
+            addonName?.let { put("addonName", it) }
+            streamDescription?.let { put("streamDescription", it) }
         }.toString()
 
         store().edit { prefs ->
@@ -121,7 +127,9 @@ class StreamLinkCacheDataStore @Inject constructor(
                 sources = sources,
                 bingeGroup = json.optString("bingeGroup", "").ifBlank { null },
                 contentLanguage = json.optString("contentLanguage", "").ifBlank { null },
-                year = json.optString("year", "").ifBlank { null }
+                year = json.optString("year", "").ifBlank { null },
+                addonName = json.optString("addonName", "").ifBlank { null },
+                streamDescription = json.optString("streamDescription", "").ifBlank { null }
             )
         }.getOrNull()
 

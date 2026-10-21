@@ -111,6 +111,41 @@ class WatchProgressPreferencesStorageTest {
     }
 
     @Test
+    fun `source label survives a reload`() = runTest {
+        val harness = harness(emptyMap())
+        harness.preferences.getAllRawEntries()
+
+        harness.preferences.saveProgress(
+            progress("item", lastWatched = 1L).copy(sourceLabel = "Local · USB Drive")
+        )
+        val reloaded = WatchProgressPreferences(harness.factory, harness.profileManager)
+
+        assertEquals("Local · USB Drive", reloaded.getAllRawEntries().getValue("item").sourceLabel)
+    }
+
+    @Test
+    fun `save without a source label keeps the stored one`() = runTest {
+        val harness = harness(emptyMap())
+        harness.preferences.getAllRawEntries()
+        harness.preferences.saveProgress(
+            progress("item", lastWatched = 1L).copy(sourceLabel = "Torrentio · 1080p")
+        )
+
+        harness.preferences.saveProgress(progress("item", lastWatched = 2L).copy(position = 4_000L))
+
+        val saved = harness.preferences.getAllRawEntries().getValue("item")
+        assertEquals(4_000L, saved.position)
+        assertEquals("Torrentio · 1080p", saved.sourceLabel)
+    }
+
+    @Test
+    fun `entries stored before source labels load without one`() = runTest {
+        val harness = harness(legacyEntries())
+
+        assertNull(harness.preferences.getAllRawEntries().getValue("item0").sourceLabel)
+    }
+
+    @Test
     fun `saving an existing recent item writes only the recent store`() = runTest {
         val entries = legacyEntries()
         val harness = harness(entries)

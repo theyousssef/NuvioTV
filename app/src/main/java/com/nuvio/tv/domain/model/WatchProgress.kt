@@ -30,7 +30,8 @@ data class WatchProgress(
     val simklPlaybackId: Long? = null,
     override val trackingProviderId: String? = null,
     override val trackingProviderItemId: String? = null,
-    override val trackingSourceUrl: String? = null
+    override val trackingSourceUrl: String? = null,
+    val sourceLabel: String? = null   // Source that was playing, e.g. "Torrentio · 1080p". Local only, never synced.
 ) : TrackingAttributedItem {
     override val trackingContentId: String
         get() = contentId

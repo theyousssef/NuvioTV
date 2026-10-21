@@ -656,8 +656,7 @@ private fun PlayerRuntimeController.persistSelectedStreamForReuse(
     url: String,
     headers: Map<String, String>
 ) {
-    if (!streamReuseLastLinkEnabled) return
-
+    // Saved even when "reuse last link" is off: Continue Watching resumes from this entry.
     val key = streamCacheKey ?: return
     val streamName = (stream.name?.takeIf { it.isNotBlank() } ?: stream.addonName)?.takeIf { it.isNotBlank() }
         ?: title
@@ -673,14 +672,15 @@ private fun PlayerRuntimeController.persistSelectedStreamForReuse(
             videoSize = currentVideoSize,
             bingeGroup = stream.behaviorHints?.bingeGroup,
             contentLanguage = contentLanguage,
-            year = year
+            year = year,
+            addonName = stream.addonName,
+            streamDescription = stream.description
         )
     }
 }
 
 private fun PlayerRuntimeController.persistTorrentStreamForReuse(stream: Stream) {
-    if (!streamReuseLastLinkEnabled) return
-
+    // Saved even when "reuse last link" is off: Continue Watching resumes from this entry.
     val key = streamCacheKey ?: return
     val infoHash = stream.getEffectiveInfoHash() ?: return
     val streamName = (stream.name?.takeIf { it.isNotBlank() } ?: stream.addonName)?.takeIf { it.isNotBlank() }
@@ -700,7 +700,9 @@ private fun PlayerRuntimeController.persistTorrentStreamForReuse(stream: Stream)
             sources = stream.sources,
             bingeGroup = stream.behaviorHints?.bingeGroup,
             contentLanguage = contentLanguage,
-            year = year
+            year = year,
+            addonName = stream.addonName,
+            streamDescription = stream.description
         )
     }
 }

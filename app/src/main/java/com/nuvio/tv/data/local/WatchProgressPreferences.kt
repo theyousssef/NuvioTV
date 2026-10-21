@@ -768,6 +768,7 @@ class WatchProgressPreferences @Inject constructor(
                     backdrop = progress.backdrop ?: existing.backdrop,
                     logo = progress.logo ?: existing.logo,
                     episodeTitle = progress.episodeTitle ?: existing.episodeTitle,
+                    sourceLabel = progress.sourceLabel ?: existing.sourceLabel,
                 )
             } else {
                 progress
@@ -792,7 +793,8 @@ class WatchProgressPreferences @Inject constructor(
             backdrop = existing.backdrop ?: remote.backdrop,
             logo = existing.logo ?: remote.logo,
             episodeTitle = existing.episodeTitle ?: remote.episodeTitle,
-            addonBaseUrl = remote.addonBaseUrl ?: existing.addonBaseUrl
+            addonBaseUrl = remote.addonBaseUrl ?: existing.addonBaseUrl,
+            sourceLabel = remote.sourceLabel ?: existing.sourceLabel
         )
     }
 
@@ -854,7 +856,8 @@ class WatchProgressPreferences @Inject constructor(
             traktPlaybackId = obj.getLong("traktPlaybackId", "trakt_playback_id"),
             traktMovieId = obj.getInt("traktMovieId", "trakt_movie_id"),
             traktShowId = obj.getInt("traktShowId", "trakt_show_id"),
-            traktEpisodeId = obj.getInt("traktEpisodeId", "trakt_episode_id")
+            traktEpisodeId = obj.getInt("traktEpisodeId", "trakt_episode_id"),
+            sourceLabel = obj.getString("sourceLabel")
         )
     }
 

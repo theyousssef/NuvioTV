@@ -2,6 +2,7 @@ package com.nuvio.tv.ui.screens.stream
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,7 @@ import com.nuvio.tv.core.network.NetworkResult
 import com.nuvio.tv.core.torrent.TorrentSettings
 import com.nuvio.tv.core.torrent.TorrentService
 import com.nuvio.tv.core.torrent.TorrentState
+import com.nuvio.tv.core.player.ResumeInfoFormatter
 import com.nuvio.tv.core.player.StreamAutoPlayPolicy
 import com.nuvio.tv.core.player.StreamAutoPlaySelector
 import com.nuvio.tv.core.tracking.TrackingMediaKind
@@ -33,6 +35,7 @@ import com.nuvio.tv.core.localmedia.LocalMediaMatch
 import com.nuvio.tv.core.localmedia.LocalMediaStreams
 import com.nuvio.tv.data.local.StreamAutoPlayMode
 import com.nuvio.tv.data.local.StreamBadgeSettingsDataStore
+import com.nuvio.tv.data.local.CachedStreamLink
 import com.nuvio.tv.data.local.StreamLinkCacheDataStore
 import com.nuvio.tv.data.local.BingeGroupCacheDataStore
 import com.nuvio.tv.domain.model.AddonStreams
@@ -118,6 +121,7 @@ class StreamScreenViewModel @Inject constructor(
     private var playbackMetaVideos: List<Video>? = null
     private var localMatches: List<LocalMediaMatch> = emptyList()
     private var localMatchesExpanded = false
+    private var resumeLastSourceAttempted = false
 
     private val embeddedStreamGroupName: String by lazy {
         context.getString(R.string.stream_embedded_group)
@@ -144,6 +148,10 @@ class StreamScreenViewModel @Inject constructor(
     private val playbackProfileId: Int = savedStateHandle.get<String>("profileId")?.toIntOrNull()
         ?: profileManager.activeProfileId.value
     private val manualSelection: Boolean = savedStateHandle.get<String>("manualSelection")
+        ?.toBooleanStrictOrNull()
+        ?: false
+    // Set by a Continue Watching card: replay the last source directly instead of showing the picker.
+    private val resumeLastSource: Boolean = savedStateHandle.get<String>("resumeLastSource")
         ?.toBooleanStrictOrNull()
         ?: false
     private val streamCacheKey: String = "${contentType.lowercase()}|$videoId"
@@ -420,11 +428,25 @@ class StreamScreenViewModel @Inject constructor(
                 }
             }
 
-            if (!autoPlayHandledForSession && playerSettings.streamReuseLastLinkEnabled) {
+            val resumeFromContinueWatching = resumeLastSource &&
+                !resumeLastSourceAttempted &&
+                !autoPlayHandledForSession
+            if (resumeFromContinueWatching) resumeLastSourceAttempted = true
+            if (!autoPlayHandledForSession &&
+                (playerSettings.streamReuseLastLinkEnabled || resumeFromContinueWatching)
+            ) {
                 val cached = streamLinkCacheDataStore.getValid(
                     contentKey = streamCacheKey,
-                    maxAgeMs = playerSettings.streamReuseLastLinkCacheHours * 60L * 60L * 1000L
-                )
+                    // Resuming from Continue Watching ignores the age limit; a dead link falls back to the picker.
+                    maxAgeMs = if (resumeFromContinueWatching) {
+                        Long.MAX_VALUE
+                    } else {
+                        playerSettings.streamReuseLastLinkCacheHours * 60L * 60L * 1000L
+                    }
+                )?.takeIf { isCachedSourceAvailable(it) }
+                if (cached == null && resumeFromContinueWatching) {
+                    Toast.makeText(context, R.string.cw_last_source_unavailable, Toast.LENGTH_SHORT).show()
+                }
                 if (cached != null) {
                     autoPlayHandledForSession = true
                     resolvedAutoPlayTarget = true
@@ -459,7 +481,9 @@ class StreamScreenViewModel @Inject constructor(
                                 videoSize = cached.videoSize,
                                 fileIdx = cached.fileIdx,
                                 sources = cached.sources,
-                                contentLanguage = cached.contentLanguage ?: contentLanguage
+                                contentLanguage = cached.contentLanguage ?: contentLanguage,
+                                addonName = cached.addonName,
+                                streamDescription = cached.streamDescription
                             ),
                             showDirectAutoPlayOverlay = showOverlay || it.showDirectAutoPlayOverlay,
                             isDirectAutoPlayFlow = showOverlay || it.isDirectAutoPlayFlow
@@ -1253,7 +1277,8 @@ class StreamScreenViewModel @Inject constructor(
             )
         }
 
-        val basePlaybackInfo = getStreamForPlayback(stream)
+        // The torrent itself is not cached here; the resolved debrid URL is saved below on success.
+        val basePlaybackInfo = getStreamForPlayback(stream, cacheTorrent = false)
         val result = directDebridResolver.resolve(stream, season, episode)
         val resolveMs = System.currentTimeMillis() - resolveStartMs
         Log.d(TAG, "resolveStreamForPlayback: debrid resolve completed in ${resolveMs}ms result=${result::class.simpleName}")
@@ -1295,7 +1320,9 @@ class StreamScreenViewModel @Inject constructor(
                             videoSize = resolved.videoSize,
                             bingeGroup = resolved.bingeGroup,
                             contentLanguage = contentLanguage,
-                            year = year
+                            year = year,
+                            addonName = resolved.addonName,
+                            streamDescription = resolved.streamDescription
                         )
                     }
                 }
@@ -1420,7 +1447,7 @@ class StreamScreenViewModel @Inject constructor(
     /**
      * Gets the selected stream for playback
      */
-    fun getStreamForPlayback(stream: Stream): StreamPlaybackInfo {
+    fun getStreamForPlayback(stream: Stream, cacheTorrent: Boolean = true): StreamPlaybackInfo {
         cancelStreamsLoad()
         val playbackInfo = StreamPlaybackInfo(
             url = stream.getStreamUrl(),
@@ -1457,23 +1484,38 @@ class StreamScreenViewModel @Inject constructor(
         StreamSidecarSubtitles.set(playbackUrlFor(playbackInfo), stream.subtitles)
 
         val url = playbackInfo.url
-        if (!url.isNullOrBlank() && !playbackInfo.isExternal) {
+        // Torrents are cached by info hash so Continue Watching can resume them; the player re-resolves the URL.
+        val torrentInfoHash = playbackInfo.infoHash
+            ?.takeIf { cacheTorrent && playbackInfo.isTorrent && url.isNullOrBlank() }
+        if ((!url.isNullOrBlank() || torrentInfoHash != null) && !playbackInfo.isExternal) {
             pendingCacheSaveJob = viewModelScope.launch {
                 streamLinkCacheDataStore.save(
                     contentKey = streamCacheKey,
-                    url = url,
+                    url = url.orEmpty(),
                     streamName = playbackInfo.streamName,
                     headers = playbackInfo.headers,
                     filename = playbackInfo.filename,
                     videoHash = playbackInfo.videoHash,
                     videoSize = playbackInfo.videoSize,
+                    infoHash = torrentInfoHash,
+                    fileIdx = playbackInfo.fileIdx.takeIf { torrentInfoHash != null },
+                    sources = playbackInfo.sources.takeIf { torrentInfoHash != null },
                     bingeGroup = playbackInfo.bingeGroup,
                     contentLanguage = contentLanguage,
-                    year = year
+                    year = year,
+                    addonName = playbackInfo.addonName,
+                    streamDescription = playbackInfo.streamDescription
                 )
             }
         }
         return playbackInfo
+    }
+
+    /** Local files can disappear (deleted, USB drive unplugged); remote links are checked by the player. */
+    private suspend fun isCachedSourceAvailable(cached: CachedStreamLink): Boolean {
+        val url = cached.url
+        val isLocal = url.startsWith("content://") || url.startsWith("file://")
+        return !isLocal || localMediaLibrary.isAvailable(url)
     }
 
     suspend fun awaitStreamLinkCacheSave() {
@@ -1883,7 +1925,12 @@ class StreamScreenViewModel @Inject constructor(
                 episodeTitle = playbackInfo.episodeTitle,
                 position = positionMs,
                 duration = effectiveDuration,
-                lastWatched = System.currentTimeMillis()
+                lastWatched = System.currentTimeMillis(),
+                sourceLabel = ResumeInfoFormatter.sourceLabel(
+                    addonName = playbackInfo.addonName,
+                    streamName = playbackInfo.streamName,
+                    streamDescription = playbackInfo.streamDescription
+                )
             )
             Log.d(TAG, "Saving external player progress: pos=${positionMs}ms, dur=${effectiveDuration}ms, " +
                 "content=$contentId, video=$videoId")
