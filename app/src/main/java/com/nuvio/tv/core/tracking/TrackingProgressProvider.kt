@@ -5,6 +5,7 @@ import com.nuvio.tv.domain.model.WatchedItem
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 
 interface TrackingProgressProvider {
@@ -36,6 +37,19 @@ interface TrackingProgressProvider {
     fun applyOptimisticRemoval(contentId: String, season: Int?, episode: Int?)
     fun clearOptimistic()
     fun retainsLocalProgress(contentId: String): Boolean = false
+
+    /**
+     * The provider's progress combined with the app's local watch history. By default only local
+     * entries the provider cannot represent ([retainsLocalProgress]) are kept.
+     */
+    fun mergeWithLocalProgress(localEntries: Flow<List<WatchProgress>>): Flow<List<WatchProgress>> =
+        combine(allProgress, localEntries) { items, localItems ->
+            mergeProgressProjectionWithRetainedLocal(
+                providerEntries = items,
+                localEntries = localItems,
+                retainsLocalProgress = ::retainsLocalProgress
+            )
+        }
     fun retainsLocalWatchedEpisode(item: WatchedItem): Boolean = false
     fun isHiddenFromProgress(contentId: String): Boolean
     fun continueWatchingCutoffEpochMs(daysCap: Int, nowEpochMs: Long): Long? = null

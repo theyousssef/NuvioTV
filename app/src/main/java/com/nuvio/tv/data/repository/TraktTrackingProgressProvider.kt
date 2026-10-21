@@ -5,6 +5,7 @@ import com.nuvio.tv.core.tracking.TrackingProviderId
 import com.nuvio.tv.core.tracking.TrackingRefreshIntent
 import com.nuvio.tv.data.local.LayoutPreferenceDataStore
 import com.nuvio.tv.data.local.TraktAuthDataStore
+import com.nuvio.tv.data.local.TraktContinueWatchingSyncStateStore
 import com.nuvio.tv.data.local.TraktSettingsDataStore
 import com.nuvio.tv.domain.model.WatchProgress
 import com.nuvio.tv.domain.model.WatchedItem
@@ -18,7 +19,8 @@ import kotlinx.coroutines.flow.map
 class TraktTrackingProgressProvider @Inject constructor(
     private val service: TraktProgressService,
     private val layoutPreferences: LayoutPreferenceDataStore,
-    authDataStore: TraktAuthDataStore
+    authDataStore: TraktAuthDataStore,
+    private val syncStateStore: TraktContinueWatchingSyncStateStore
 ) : TrackingProgressProvider {
     override val providerId = TrackingProviderId.TRAKT
     override val isAuthenticated = authDataStore.isEffectivelyAuthenticated
@@ -77,6 +79,21 @@ class TraktTrackingProgressProvider @Inject constructor(
 
     override fun retainsLocalProgress(contentId: String): Boolean =
         shouldRetainTraktLocalProgress(contentId)
+
+    /**
+     * Continue Watching is the merge of Trakt and the local watch history: the newest copy of each
+     * item wins and items only played locally stay (unless Trakt had them and they were removed
+     * there since).
+     */
+    override fun mergeWithLocalProgress(localEntries: Flow<List<WatchProgress>>): Flow<List<WatchProgress>> =
+        combine(allProgress, localEntries, syncStateStore.confirmedVersions) { remote, local, confirmed ->
+            mergeTraktAndLocalProgress(
+                remoteEntries = remote,
+                localEntries = local,
+                confirmedVersions = confirmed,
+                isHiddenOnRemote = service::isShowHiddenFromProgress
+            )
+        }
 
     override fun retainsLocalWatchedEpisode(item: WatchedItem): Boolean =
         shouldRetainTraktLocalWatchedEpisode(item)

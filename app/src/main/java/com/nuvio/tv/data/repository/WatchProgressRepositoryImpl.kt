@@ -20,7 +20,6 @@ import com.nuvio.tv.core.tracking.TrackingHistoryWriterRegistry
 import com.nuvio.tv.core.tracking.TrackingMediaReference
 import com.nuvio.tv.core.tracking.TrackingProgressProvider
 import com.nuvio.tv.core.tracking.TrackingProgressProviderRegistry
-import com.nuvio.tv.core.tracking.mergeProgressProjectionWithRetainedLocal
 import com.nuvio.tv.core.tracking.mergeWatchedEpisodeProjection
 import com.nuvio.tv.core.tracking.TrackingProviderId
 import com.nuvio.tv.core.tracking.TrackingRefreshIntent
@@ -401,15 +400,12 @@ class WatchProgressRepositoryImpl @Inject constructor(
             activeProgressProviderFlow().flatMapLatest { provider ->
                 if (provider != null) {
                     combine(
-                        provider.allProgress,
-                        watchProgressPreferences.observeAllProgress(profileId),
+                        provider.mergeWithLocalProgress(
+                            watchProgressPreferences.observeAllProgress(profileId)
+                        ),
                         metadataState
-                    ) { items, localItems, metadata ->
-                        mergeProgressProjectionWithRetainedLocal(
-                            providerEntries = items,
-                            localEntries = localItems,
-                            retainsLocalProgress = provider::retainsLocalProgress
-                        ).map { progress -> enrichWithMetadata(progress, metadata) }
+                    ) { items, metadata ->
+                        items.map { progress -> enrichWithMetadata(progress, metadata) }
                             .sortedByDescending(WatchProgress::lastWatched)
                     }.onEach { items ->
                         val needsMetadata = items.filter { progress ->
