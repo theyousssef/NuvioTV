@@ -2301,6 +2301,11 @@
     <string name="update_download_complete">Download complete. Ready to install.</string>
     <string name="update_up_to_date">System is up to date. Latest changes:</string>
     <string name="update_close">Close</string>
+    <string name="upstream_release_title">New Nuvio release: %1$s</string>
+    <string name="upstream_release_body">Nuvio %1$s is out. Check the release notes for new features you may want in Locflix.</string>
+    <string name="upstream_release_name_date">%1$s · %2$s</string>
+    <string name="upstream_release_ok">OK</string>
+    <string name="cd_upstream_release_qr">QR code for the Nuvio release notes</string>
     <string name="update_open_settings">Open Settings</string>
     <string name="update_install">Install</string>
     <string name="update_ignore">Ignore</string>

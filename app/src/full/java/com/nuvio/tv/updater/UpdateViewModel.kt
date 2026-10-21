@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nuvio.tv.BuildConfig
 import com.nuvio.tv.R
+import com.nuvio.tv.core.build.AppFeaturePolicy
 import com.nuvio.tv.updater.model.AppUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -48,7 +49,7 @@ class UpdateViewModel @Inject constructor(
     private var updateCheckJob: Job? = null
 
     init {
-        viewModelScope.launch {
+        if (AppFeaturePolicy.inAppUpdatesEnabled) viewModelScope.launch {
             val enabled = updatePreferences.updateBannerEnabled.first()
             val channel = updatePreferences.getOrInitializeUpdateChannel()
             _uiState.update {
@@ -64,6 +65,7 @@ class UpdateViewModel @Inject constructor(
     }
 
     fun checkForUpdates(force: Boolean, showNoUpdateFeedback: Boolean) {
+        if (!AppFeaturePolicy.inAppUpdatesEnabled) return
         if (!force && !_uiState.value.updateBannerEnabled) return
 
         updateCheckJob?.cancel()
@@ -185,7 +187,7 @@ class UpdateViewModel @Inject constructor(
         }
         viewModelScope.launch {
             updatePreferences.setUpdateBannerEnabled(enabled)
-            if (enabled && changed && !BuildConfig.IS_DEBUG_BUILD) {
+            if (enabled && changed && !BuildConfig.IS_DEBUG_BUILD && AppFeaturePolicy.inAppUpdatesEnabled) {
                 checkForUpdates(force = false, showNoUpdateFeedback = false)
             }
         }
@@ -214,13 +216,14 @@ class UpdateViewModel @Inject constructor(
         }
         viewModelScope.launch {
             updatePreferences.setUpdateChannel(channel)
-            if (!BuildConfig.IS_DEBUG_BUILD) {
+            if (!BuildConfig.IS_DEBUG_BUILD && AppFeaturePolicy.inAppUpdatesEnabled) {
                 checkForUpdates(force = true, showNoUpdateFeedback = false)
             }
         }
     }
 
     fun downloadUpdate() {
+        if (!AppFeaturePolicy.inAppUpdatesEnabled) return
         val update = _uiState.value.update ?: return
 
         viewModelScope.launch {
@@ -272,6 +275,7 @@ class UpdateViewModel @Inject constructor(
     }
 
     fun installUpdateOrRequestPermission() {
+        if (!AppFeaturePolicy.inAppUpdatesEnabled) return
         val apkPath = _uiState.value.downloadedApkPath ?: return
         val apkFile = File(apkPath)
         if (!apkFile.exists()) {

@@ -192,6 +192,8 @@ import com.nuvio.tv.ui.util.LocalFastHorizontalNavigationEnabled
 import com.nuvio.tv.ui.util.LocalRecompositionHighlighterEnabled
 import com.nuvio.tv.ui.util.rememberDrawerItemFocusRequesters
 import com.nuvio.tv.updater.UpdateViewModel
+import com.nuvio.tv.updater.UpstreamReleaseViewModel
+import com.nuvio.tv.updater.ui.UpstreamReleaseDialog
 import com.nuvio.tv.updater.ui.UpdateBannerHost
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.haze.HazeState
@@ -1104,6 +1106,17 @@ open class MainActivity : ComponentActivity() {
                     val updateBannerState = updateState.copy(
                         showBanner = updateState.showBanner && currentRoute?.startsWith("player/") != true
                     )
+
+                    val upstreamReleaseViewModel: UpstreamReleaseViewModel = hiltViewModel(this@MainActivity)
+                    val upstreamReleaseNotice by upstreamReleaseViewModel.notice.collectAsState()
+                    upstreamReleaseNotice
+                        ?.takeIf { currentRoute == Screen.Home.route }
+                        ?.let { notice ->
+                            UpstreamReleaseDialog(
+                                notice = notice,
+                                onDismiss = upstreamReleaseViewModel::acknowledge
+                            )
+                        }
 
                     UpdateBannerHost(
                         state = updateBannerState,
