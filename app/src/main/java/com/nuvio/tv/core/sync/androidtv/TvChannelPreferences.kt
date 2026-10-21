@@ -2,8 +2,8 @@ package com.nuvio.tv.core.sync.androidtv
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -21,7 +21,7 @@ class TvChannelPreferences @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val channelIdKey = longPreferencesKey("continue_watching_channel_id")
-    private val logoVersionKey = intPreferencesKey("channel_logo_version")
+    private val logoSignatureKey = stringPreferencesKey("channel_logo_signature")
 
     suspend fun getChannelId(): Long? =
         context.tvChannelDataStore.data.map { it[channelIdKey] }.first()
@@ -34,11 +34,11 @@ class TvChannelPreferences @Inject constructor(
         context.tvChannelDataStore.edit { it.remove(channelIdKey) }
     }
 
-    /** The app versionCode whose launcher icon was last written as the channel logo. */
-    suspend fun getLogoVersion(): Int? =
-        context.tvChannelDataStore.data.map { it[logoVersionKey] }.first()
+    /** Fingerprint of the launcher icon last written as the channel logo. */
+    suspend fun getLogoSignature(): String? =
+        context.tvChannelDataStore.data.map { it[logoSignatureKey] }.first()
 
-    suspend fun setLogoVersion(version: Int) {
-        context.tvChannelDataStore.edit { it[logoVersionKey] = version }
+    suspend fun setLogoSignature(signature: String) {
+        context.tvChannelDataStore.edit { it[logoSignatureKey] = signature }
     }
 }

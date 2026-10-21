@@ -11,17 +11,19 @@ import android.util.Log
 import androidx.tvprovider.media.tv.Channel
 import androidx.tvprovider.media.tv.PreviewProgram
 import androidx.tvprovider.media.tv.TvContractCompat
-import com.nuvio.tv.BuildConfig
 import com.nuvio.tv.MainActivity
 import com.nuvio.tv.R
 import com.nuvio.tv.domain.model.WatchProgress
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.CRC32
 import kotlin.math.abs
 
 private const val TAG = "TvChannelSync"
@@ -32,6 +34,7 @@ class AndroidTvChannelManager @Inject constructor(
     private val prefs: TvChannelPreferences,
 ) {
     private val syncedProgramFingerprints = ConcurrentHashMap<String, ChannelProgramFingerprint>()
+    private val channelMutex = Mutex()
 
     private data class ChannelProgramFingerprint(
         val title: String?,
@@ -54,51 +57,44 @@ class AndroidTvChannelManager @Inject constructor(
     /**
      * Returns the channel id, creating or reusing the channel as needed.
      * Returns null on non-leanback devices or on failure.
+     *
+     * Launchers (Google TV included) cache the channel logo by its URI, which is fixed per channel
+     * id, so rewriting the logo of an existing channel never shows up. When the launcher icon
+     * artwork changes, the channel is deleted and recreated once so it gets a new id/logo URI.
      */
     suspend fun ensureChannel(): Long? = withContext(Dispatchers.IO) {
         if (!isSupported()) return@withContext null
+        channelMutex.withLock { ensureChannelLocked() }
+    }
+
+    private suspend fun ensureChannelLocked(): Long? =
         runCatching {
+            val signature = launcherIconSignature()
+            val logoCurrent = signature == null || prefs.getLogoSignature() == signature
             val stored = prefs.getChannelId()
             if (stored != null) {
-                val cursor = context.contentResolver.query(
-                    TvContractCompat.buildChannelUri(stored),
-                    arrayOf(TvContractCompat.Channels._ID),
-                    null, null, null
-                )
-                val exists = cursor?.use { it.moveToFirst() } == true
-                if (exists) {
-                    // The launcher keeps the logo written at creation, so refresh it after an app update.
-                    if (prefs.getLogoVersion() != BuildConfig.VERSION_CODE) writeChannelLogo(stored)
-                    return@runCatching stored
+                if (channelExists(stored)) {
+                    if (logoCurrent) return@runCatching stored
+                    Log.d(TAG, "Launcher icon changed; recreating channel $stored so the launcher reloads its logo")
+                    deleteChannel(stored)
+                } else {
+                    Log.d(TAG, "Stored channel $stored gone; recreating")
                 }
-                Log.d(TAG, "Stored channel $stored gone; recreating")
                 prefs.clearChannelId()
             }
 
-            val orphan = context.contentResolver.query(
-                TvContractCompat.Channels.CONTENT_URI,
-                arrayOf(
-                    TvContractCompat.Channels._ID,
-                    TvContractCompat.Channels.COLUMN_INTERNAL_PROVIDER_ID
-                ),
-                null, null, null
-            )?.use { c ->
-                val idIdx = c.getColumnIndex(TvContractCompat.Channels._ID)
-                val providerIdx = c.getColumnIndex(TvContractCompat.Channels.COLUMN_INTERNAL_PROVIDER_ID)
-                if (idIdx < 0 || providerIdx < 0) return@use null
-                while (c.moveToNext()) {
-                    val providerId = c.getString(providerIdx)
-                    if (providerId != null && providerId.startsWith(context.packageName)) {
-                        return@use c.getLong(idIdx)
-                    }
+            val orphans = findOwnChannels()
+            if (orphans.isNotEmpty()) {
+                if (logoCurrent) {
+                    val orphan = orphans.first()
+                    Log.d(TAG, "Reusing orphaned channel $orphan")
+                    prefs.setChannelId(orphan)
+                    return@runCatching orphan
                 }
-                null
-            }
-            if (orphan != null) {
-                Log.d(TAG, "Reusing orphaned channel $orphan")
-                prefs.setChannelId(orphan)
-                writeChannelLogo(orphan)
-                return@runCatching orphan
+                orphans.forEach { orphan ->
+                    Log.d(TAG, "Deleting channel $orphan with an outdated logo")
+                    deleteChannel(orphan)
+                }
             }
 
             val appLinkUri = Uri.parse(
@@ -120,12 +116,63 @@ class AndroidTvChannelManager @Inject constructor(
 
             val id = ContentUris.parseId(inserted)
             prefs.setChannelId(id)
-            writeChannelLogo(id)
+            syncedProgramFingerprints.clear()
+            writeChannelLogo(id, signature)
             TvContractCompat.requestChannelBrowsable(context, id)
-            Log.d(TAG, "Created channel id=$id")
+            Log.d(TAG, "Created channel id=$id (logo $signature)")
             id
         }.onFailure { Log.w(TAG, "ensureChannel failed", it) }.getOrNull()
+
+    private fun channelExists(channelId: Long): Boolean =
+        context.contentResolver.query(
+            TvContractCompat.buildChannelUri(channelId),
+            arrayOf(TvContractCompat.Channels._ID),
+            null, null, null
+        )?.use { it.moveToFirst() } == true
+
+    private fun findOwnChannels(): List<Long> =
+        context.contentResolver.query(
+            TvContractCompat.Channels.CONTENT_URI,
+            arrayOf(
+                TvContractCompat.Channels._ID,
+                TvContractCompat.Channels.COLUMN_INTERNAL_PROVIDER_ID
+            ),
+            null, null, null
+        )?.use { c ->
+            val idIdx = c.getColumnIndex(TvContractCompat.Channels._ID)
+            val providerIdx = c.getColumnIndex(TvContractCompat.Channels.COLUMN_INTERNAL_PROVIDER_ID)
+            if (idIdx < 0 || providerIdx < 0) return@use emptyList()
+            buildList {
+                while (c.moveToNext()) {
+                    val providerId = c.getString(providerIdx)
+                    if (providerId != null && providerId.startsWith(context.packageName)) add(c.getLong(idIdx))
+                }
+            }
+        }.orEmpty()
+
+    /** Deleting a channel also deletes its preview programs. */
+    private fun deleteChannel(channelId: Long) {
+        runCatching {
+            context.contentResolver.delete(TvContractCompat.buildChannelUri(channelId), null, null)
+        }.onFailure { Log.w(TAG, "Deleting channel $channelId failed", it) }
+        syncedProgramFingerprints.clear()
     }
+
+    /** Fingerprint of the launcher icon artwork the channel logo is made from. */
+    private fun launcherIconSignature(): String? = runCatching {
+        val crc = CRC32()
+        var total = 0L
+        context.resources.openRawResource(R.mipmap.ic_launcher).use { input ->
+            val buffer = ByteArray(8 * 1024)
+            while (true) {
+                val read = input.read(buffer)
+                if (read <= 0) break
+                crc.update(buffer, 0, read)
+                total += read
+            }
+        }
+        if (total == 0L) null else "crc32:" + java.lang.Long.toHexString(crc.value)
+    }.onFailure { Log.w(TAG, "Reading launcher icon failed", it) }.getOrNull()
 
     /**
      * Syncs [items] to the Continue Watching channel: upserts present items and
@@ -358,14 +405,16 @@ class AndroidTvChannelManager @Inject constructor(
         }
     }
 
-    private suspend fun writeChannelLogo(channelId: Long) {
+    private suspend fun writeChannelLogo(channelId: Long, signature: String?) {
         runCatching {
             val bitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
-                ?: return
-            context.contentResolver.openOutputStream(
+                ?: error("launcher icon could not be decoded")
+            val written = context.contentResolver.openOutputStream(
                 TvContractCompat.buildChannelLogoUri(channelId)
-            )?.use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
-            prefs.setLogoVersion(BuildConfig.VERSION_CODE)
+            )?.use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) } == true
+            check(written) { "logo stream unavailable" }
+            signature?.let { prefs.setLogoSignature(it) }
+            Log.d(TAG, "Wrote ${bitmap.width}x${bitmap.height} logo for channel $channelId")
         }.onFailure { Log.w(TAG, "writeChannelLogo failed", it) }
     }
 
