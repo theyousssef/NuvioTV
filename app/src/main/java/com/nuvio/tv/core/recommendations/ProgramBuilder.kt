@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.tvprovider.media.tv.TvContractCompat
 import androidx.tvprovider.media.tv.WatchNextProgram
 import com.nuvio.tv.MainActivity
+import com.nuvio.tv.core.player.ResumeInfoFormatter
 import com.nuvio.tv.domain.model.WatchProgress
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -37,6 +38,12 @@ class ProgramBuilder @Inject constructor(
             .setLastEngagementTimeUtcMillis(progress.lastWatched)
             .setInternalProviderId(watchNextId(progress))
             .setIntentUri(buildPlayUri(progress))
+
+        // e.g. "23:14 / 58:02 · Torrentio · 1080p", matching the in-app Continue Watching card.
+        listOfNotNull(
+            ResumeInfoFormatter.resumeTime(progress.position, progress.duration),
+            progress.sourceLabel?.takeIf { it.isNotBlank() }
+        ).joinToString(" · ").takeIf { it.isNotEmpty() }?.let { builder.setDescription(it) }
 
         builder.setPosterArtAspectRatio(TvContractCompat.PreviewPrograms.ASPECT_RATIO_16_9)
 

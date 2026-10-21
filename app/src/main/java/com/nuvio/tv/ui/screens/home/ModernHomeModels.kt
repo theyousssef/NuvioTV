@@ -17,6 +17,7 @@ import com.nuvio.tv.ui.util.computeAirDateBadgeText
 import com.nuvio.tv.ui.util.formatHeroRuntime
 import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.R
+import com.nuvio.tv.core.player.ResumeInfoFormatter
 import com.nuvio.tv.ui.components.formatContinueWatchingProgressLabel
 import com.nuvio.tv.ui.util.StableList
 import com.nuvio.tv.ui.util.StableMap
@@ -292,13 +293,14 @@ internal fun buildContinueWatchingItem(
     val secondaryHighlightText = when (item) {
         is ContinueWatchingItem.InProgress -> {
             val progress = item.progress
-            formatContinueWatchingProgressLabel(
-                progress = progress,
-                resumeLabel = context.getString(R.string.cw_resume),
-                percentWatchedLabel = context.getString(R.string.cw_percent_watched),
-                hoursMinLeftLabel = context.getString(R.string.cw_hours_min_left),
-                minLeftLabel = context.getString(R.string.cw_min_left)
-            )
+            ResumeInfoFormatter.resumeTime(progress.position, progress.duration)
+                ?: formatContinueWatchingProgressLabel(
+                    progress = progress,
+                    resumeLabel = context.getString(R.string.cw_resume),
+                    percentWatchedLabel = context.getString(R.string.cw_percent_watched),
+                    hoursMinLeftLabel = context.getString(R.string.cw_hours_min_left),
+                    minLeftLabel = context.getString(R.string.cw_min_left)
+                )
         }
         is ContinueWatchingItem.NextUp -> {
             if (item.info.isReleaseAlert) {
