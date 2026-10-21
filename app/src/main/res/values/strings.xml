@@ -1653,6 +1653,7 @@
     <string name="stream_no_streams_hint">Try installing more addons to find streams</string>
     <string name="stream_finding_source">Finding stream source</string>
     <string name="local_media_show_more">Show %1$d more local matches</string>
+    <string name="local_media_no_match">No matching files on this TV or USB drives.\n%1$s</string>
     <string name="local_media_permission_title">Find movies and shows on this TV and USB drives</string>
     <string name="debrid_resolving_stream">Resolving debrid stream</string>
     <string name="debrid_stale_stream">This Debrid result expired. Refreshing streams.</string>

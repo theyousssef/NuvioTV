@@ -955,6 +955,9 @@ class StreamScreenViewModel @Inject constructor(
             if (matches != null) localMatches = matches
             val group = localMediaGroup()
             when {
+                // Say that local files were searched too, not only that addons are missing.
+                group == null && matches != null && result is NetworkResult.Error ->
+                    result.copy(message = context.getString(R.string.local_media_no_match, result.message))
                 group == null -> result
                 result is NetworkResult.Success -> NetworkResult.Success(listOf(group) + result.data)
                 else -> NetworkResult.Success(listOf(group))
